@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const userController = require('../controllers/UserController')
+const userController = require('../controllers/userController')
 
 //CRUD table User
 router.get('/allUser', userController.getAllUser) //Read

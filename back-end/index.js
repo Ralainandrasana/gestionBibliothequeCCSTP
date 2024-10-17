@@ -2,7 +2,8 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
-const rout = require('./routes/router');
+const crudRout = require('./routes/crudRouter');
+const otherRout = require('./routes/otherRouter');
 
 //VARIABLE D'ENVIRONNEMENT
 const PORT = 3000;
@@ -10,7 +11,8 @@ const PORT = 3000;
 //UTILISATION DES ...
 app.use(bodyParser.json()); // Pour les requêtes avec des données JSON
 app.use(bodyParser.urlencoded({ extended: true })); // Pour les données envoyées via formulaire
-app.use(rout);
+app.use(crudRout);
+app.use(otherRout);
 
 //ECOUTE AU PORT
 app.listen(PORT, () => {

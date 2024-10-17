@@ -1,0 +1,61 @@
+const db = require('../config/db');
+
+class AdherentModel {
+    // READ
+    static async getAdherents() {
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM adherent', [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    // CREATE
+    static async addAdherent(data) {
+        return new Promise((resolve, reject) => {
+            const { categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp } = data;
+            db.query('INSERT INTO adherent(categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp) VALUES(?, ?, ?, ?, ?, ?, ?, ?)', 
+                     [categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    // UPDATE
+    static async updateAdherent(id_adh, data) {
+        return new Promise((resolve, reject) => {
+            const { categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp } = data;
+            db.query('UPDATE adherent SET categorie = ?, date_reinscription = ?, date_fin = ?, type = ?, id_pers = ?, penaliser = ?, sanctionner = ?, nbrLivreEmp = ? WHERE id_adh = ?', 
+                     [categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp, id_adh], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+
+    // DELETE
+    static async deleteAdherent(id_adh) {
+        return new Promise((resolve, reject) => {
+            db.query('DELETE FROM adherent WHERE id_adh = ?', [id_adh], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+}
+
+module.exports = AdherentModel;
