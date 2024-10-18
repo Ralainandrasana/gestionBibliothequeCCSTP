@@ -4,7 +4,7 @@ class LivreModel {
     // READ
     static async getLivres() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM livre', [], (error, result) => {
+            db.query('SELECT * FROM livre limit 3', [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -18,10 +18,10 @@ class LivreModel {
     static async addLivre(data) {
         return new Promise((resolve, reject) => {
             const { Type, titre, sous_titre, auteur, editeur, deway, cote, ISBN, langue_pays, dimension, nbre_page, etat, status, date_status, photo, anneeEdition, disponible, idOeuvre } = data;
-            db.query('INSERT INTO livre(Type, titre, sous_titre, auteur, editeur, deway, cote, ISBN, langue_pays, dimension, nbre_page, etat, status, date_status, photo, anneeEdition, disponible, idOeuvre) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+            db.query('INSERT INTO livre(Type, titre, sous_titre, auteur, editeur, deway, cote, ISBN, langue_pays, dimension, nbre_page, etat, status, date_status, photo, anneeEdition, disponible, idOeuvre) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
                      [Type, titre, sous_titre, auteur, editeur, deway, cote, ISBN, langue_pays, dimension, nbre_page, etat, status, date_status, photo, anneeEdition, disponible, idOeuvre], (error, result) => {
                 if (error) {
-                    reject(error);
+                    console.log(error);
                 } else {
                     resolve(result);
                 }
@@ -48,6 +48,42 @@ class LivreModel {
     static async deleteLivre(id_livre) {
         return new Promise((resolve, reject) => {
             db.query('DELETE FROM livre WHERE id_livre = ?', [id_livre], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    // effectif total des livres
+    static async getEffectifLivre() {
+        return new Promise((resolve, reject) => {
+            db.query('select count(*) as effectifLivre from livre', [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    // effectif par type des livres
+    static async getEffectifParTypelivre() {
+        return new Promise((resolve, reject) => {
+            db.query('select Type, count(*) as effectif from livre group by Type', [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    // effectif par Dewey des livres
+    static async getEffectifParDeweylivre() {
+        return new Promise((resolve, reject) => {
+            db.query('select deway, count(*) as effectif from livre group by deway', [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

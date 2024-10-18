@@ -9,16 +9,20 @@ const livreEmpruntController = require('../controllers/livreEmpruntController')
 const appLogsController = require('../controllers/appLogsController')
 
 //CRUD table User
-router.get('/allUser', userController.getAllUser) //Read
-router.post('/addUser', userController.addNewUser) //Create
-router.post('/updateUser', userController.updateAnUser) //Update
-router.post('/deleteUser', userController.deleteAnUser) //Delete
+router.get('/users', userController.getAllUser) //Read
+router.post('/register', userController.addNewUser) //Create
+router.put('/users', userController.updateAnUser) //Update
+router.delete('/users', userController.deleteAnUser) //Delete
+
+//login and logout
+router.post('/login', userController.login) //Create
+router.post('/logout', userController.addNewUser) //Create
 
 // CRUD table Dewey
-router.get('/allDeweys', deweyController.getAllDeweys); // Read
-router.post('/addDewey', deweyController.addNewDewey); // Create
-router.post('/updateDewey', deweyController.updateADewey); // Update
-router.post('/deleteDewey', deweyController.deleteADewey); // Delete
+router.get('/Deweys', deweyController.getAllDeweys); // Read
+router.post('/Deweys', deweyController.addNewDewey); // Create
+router.put('/Deweys', deweyController.updateADewey); // Update
+router.delete('/Deweys', deweyController.deleteADewey); // Delete
 
 router.get('/adherents', adherentController.getAllAdherents);
 router.post('/adherents', adherentController.addNewAdherent);

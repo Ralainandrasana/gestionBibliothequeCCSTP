@@ -90,7 +90,7 @@ SET l.idOeuvre = o.id;
 
 
 
-`dewey`(`id`, `titre`, `description`)
+-- `dewey`(`id`, `titre`, `description`)
 
 `adherent`(`id_adh`, `categorie`, `date_reinscription`, `date_fin`, `type`, `id_pers`, `penaliser`, `sanctionner`, `nbrLivreEmp`)
 

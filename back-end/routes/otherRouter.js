@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const userController = require('../controllers/userController')
+const livreController = require('../controllers/livreController')
+const adherentController = require('../controllers/adherentController')
 
-//CRUD table User
-router.get('/allUser', userController.getAllUser) //Read
-router.post('/addUser', userController.addNewUser) //Create
-router.post('/updateUser', userController.updateAnUser) //Update
-router.post('/deleteUser', userController.deleteAnUser) //Delete
+//inofo sur l'effectif des livres et celles des adherents
+router.get('/effectifTotalAdherent', adherentController.getEffectifAdherent) //Read
+router.get('/effectifAdherentParCategorie', adherentController.getEffectifParCategorieAdherent) //Read
+router.get('/effectifTotalLivre', livreController.getEffectifLivre) //Read
+router.get('/effectifLivreParType', livreController.getEffectifParTypelivre) //Read
+router.get('/effectifLivreParDewey', livreController.getEffectifParDeweylivre) //Read
 
-module.exports = router
-
-
+module.exports = router 

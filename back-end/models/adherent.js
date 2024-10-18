@@ -56,6 +56,30 @@ class AdherentModel {
             });
         });
     }
+    // effectif total des adherents
+    static async getEffectifAdherent() {
+        return new Promise((resolve, reject) => {
+            db.query('select count(*) as effectifAdherent from adherent', [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    // effectif par categorie des adherents
+    static async getEffectifParCategorieAdherent() {
+        return new Promise((resolve, reject) => {
+            db.query('select categorie, count(*) as effectif from adherent group by categorie', [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
 }
 
 module.exports = AdherentModel;

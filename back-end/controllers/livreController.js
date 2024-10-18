@@ -40,6 +40,33 @@ class LivreController {
             res.status(500).send('Error deleting Livre');
         }
     }
+    // effectif total des livres
+    static async getEffectifLivre(req, res){
+        try {
+            const results = await livreModel.getEffectifLivre();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
+        }
+    }
+    // effectif par type des livres
+    static async getEffectifParTypelivre(req, res){
+        try {
+            const results = await livreModel.getEffectifParTypelivre();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
+        }
+    }
+    // effectif par Dewey des livres
+    static async getEffectifParDeweylivre(req, res){
+        try {
+            const results = await livreModel.getEffectifParDeweylivre();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
+        }
+    }
 }
 
 module.exports = LivreController;

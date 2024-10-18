@@ -53,6 +53,35 @@ class UserModel {
 			});
 		});
 	}
+	// READ
+static async checkUserIfExist(nom) {
+    return new Promise((resolve, reject) => {
+        db.query('SELECT * FROM user WHERE nom = ?', [nom], (error, result) => {
+            if (error) {
+                reject(error); // Rejeter la promesse en cas d'erreur
+            } else {
+                if (result.length > 0) {
+                    resolve(result[0]); // Utilisateur trouvé, retourner le premier résultat
+                } else {
+                    resolve(null); // Aucun utilisateur trouvé
+                }
+            }
+        });
+    });
+}
+//READ
+static async getInfoUser(nom) {
+	return new Promise((resolve, reject) => {
+		db.query('SELECT * FROM user where nom = ?', [nom], (error, result) => {
+			if (error) {
+				reject(error); // Rejeter la promesse en cas d'erreur
+			} else {
+				resolve(result); // Résoudre la promesse avec les résultats
+			}
+		});
+	});
+}
+
 }
 
 module.exports = UserModel;

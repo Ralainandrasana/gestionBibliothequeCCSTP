@@ -40,6 +40,24 @@ class AdherentController {
             res.status(500).send('Error deleting Adherent');
         }
     }
+    // effectif total des adherents
+    static async getEffectifAdherent(req, res) {
+        try {
+            const results = await adherentModel.getEffectifAdherent();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Adherents');
+        }
+    }
+    // effectif par categorie des adherents
+    static async getEffectifParCategorieAdherent(req, res) {
+        try {
+            const results = await adherentModel.getEffectifParCategorieAdherent();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Adherents');
+        }
+    }
 }
 
 module.exports = AdherentController;
