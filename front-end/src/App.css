@@ -1,0 +1,220 @@
+/* MENU */
+:root{
+  --blueColor: #235FD9;
+  --selectedMenu: #396CE1;
+  --blueSombre: #061C6B;
+  --blueTh: #F5F8FA;
+  --blueVif: #05DBF2;
+  --gray: #969FBD;
+}
+.ant-menu{
+  background: var(--blueColor);
+  color: #FFFFFF;
+}
+.ant-menu-title-content{
+  color: #FFFFFF;
+}
+.ant-menu-item-icon svg, .ant-menu-submenu .ant-menu-submenu-title i{
+  color: #FFFFFF;
+}
+.ant-menu .ant-menu-item-selected {
+  background-color: var(--selectedMenu);
+  color: white;
+}
+
+/* CONTENT */
+.content{
+  background: #F8FAFE;
+  color: var(--blueColor);
+  padding: 0 15px 0 15px;
+}
+.header{
+  background: #FFFFFF;
+  height: 6vh;
+  display: flex;
+  z-index: 100;
+  justify-content: space-between;
+}
+.logo{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 25px;
+}
+.logoCCSP{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px;
+}
+.logoCCSP img{
+  width: 45px;
+  height: 45px;
+}
+.header h1{
+  margin: 0;
+  color: var(--blueColor);
+}
+.user{
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  margin-right: 20px;
+  width: 10%;
+}
+.user .photo img{
+  width: 35px;
+  height: 35px;
+}
+.user h5, .user h6{
+  margin: 0;
+}
+.component .rout{
+  display: flex;
+  align-items: center;
+}
+.component .rout .icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.component .rout p{
+  font-size: 12px;
+  color: var(--blueSombre);
+  font-weight: bolder;
+}
+.component .bouton{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 10px 20px;
+}
+.component .bouton .titreTable{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  color: var(--blueSombre);
+}
+.component .bouton .right{
+  display: flex;
+  justify-content: space-between;
+}
+.component .bouton .right input[placeholder='Rechercher...']{
+  margin-left: 20px;
+  width: 170px;
+  color: var(--blueSombre);
+}
+.component .boutonAndTable .bouton .right .ant-select .ant-select-selector .ant-select-selection-search  input{
+  color: var(--blueSombre);
+}
+/* .component .boutonAndTable .bouton .right .ant-select{
+  margin-left: 20px;
+  width: 170px;
+} */
+.component .bouton .left{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.component .bouton .left button{
+  margin: 0 20px 0 20px;
+  background-color: var(--blueColor);
+}
+.component .bouton .left button:hover{
+  background-color: var(--selectedMenu);
+}
+
+/* TABLEAU PERSONNE*/
+.table{
+  overflow-x: auto;
+  height: 80vh;
+  padding-top: 10px;
+  color: var(--blueSombre);
+}
+.table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-header table thead tr th{
+  color: var(--blueColor);
+  background-color: var(--blueTh);
+}
+.table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-body table tbody tr td{
+  color: var(--blueSombre);
+}
+.table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-body table tbody tr:hover{
+  /* background-color: var(--blueTh); */
+}
+.table .iconAction{
+  color: var(--blueColor);
+}
+.footer{
+  color: var(--blueSombre);
+  opacity: 0.5;
+  font-size: smaller;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* DASHBOARD */
+.component .titre .titreTable{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+  color: var(--blueSombre);
+  margin-left: 20px;
+}
+.card .left{
+  border: solid 1px var(--blueVif);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+.card{
+  display: flex;
+  justify-content: center;
+  margin: 3px;
+}
+.card .right h1{
+  margin: 0;
+  color: var(--blueSombre);
+}
+.card .right p{
+  margin: 0;
+  color: var(--gray);
+}
+.card .ant-card-body{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 80%;
+}
+.component .content{
+  padding-top: 20px;
+  overflow-y: auto;
+}
+.component .content .content1{
+  display: flex;
+}
+.component .content .content1 .effectif{
+  display: flex;
+}
+.component .content .content1 .diagramme{
+  display: flex;
+}
+
+/* FORMULAIRE */
+.form{
+  background: #FFFFFF;
+  height: 80vh;
+  padding-top: 20px;
+  margin-top: 10px;
+}
+.form .ant-form .ant-form-item .ant-form-item-row .ant-form-item-label label{
+  color: var(--blueSombre);
+}
+
+.App div .content{
+  overflow-y: overlay;
+}
