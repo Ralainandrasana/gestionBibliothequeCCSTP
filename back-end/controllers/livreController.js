@@ -10,6 +10,26 @@ class LivreController {
             res.status(500).send('Error retrieving Livres');
         }
     }
+    // READ
+    static async getAllLivresNonDispo(req, res) {
+        try {
+            const results = await livreModel.getLivresNonDispo();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
+        }
+    }
+
+    // READ autocomplete
+    static async getAutoCompleteLivres(req, res) {
+        try {
+            const results = await livreModel.getAutoCompleteLivres(req.query.search);
+            console.log(req.query.search)
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
+        }
+    }
 
     // CREATE
     static async addNewLivre(req, res) {
@@ -31,6 +51,17 @@ class LivreController {
         }
     }
 
+    // UPDATE
+    static async setDisponibleRendu(req, res) {
+        try {
+            const { id_livre } = req.params;
+            await livreModel.setDisponibleRendu(id_livre);
+            res.send('Livre updated successfully');
+        } catch (error) {
+            res.status(500).send('Error updating Livre');
+        }
+    }
+
     // DELETE
     static async deleteLivre(req, res) {
         try {
@@ -38,6 +69,15 @@ class LivreController {
             res.send('Livre deleted successfully');
         } catch (error) {
             res.status(500).send('Error deleting Livre');
+        }
+    }
+    // effectif total des livres
+    static async getClassementLivres(req, res){
+        try {
+            const results = await livreModel.getClassementLivres();
+            res.json(results);
+        } catch (error) {
+            res.status(500).send('Error retrieving Livres');
         }
     }
     // effectif total des livres

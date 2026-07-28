@@ -13,10 +13,10 @@ class DeweyController {
 
     // CREATE
     static async addNewDewey(req, res) {
-        const { titre, description } = req.body;
+        const { code, titre, description } = req.body;
 
         try {
-            await deweyModel.addDewey(titre, description);
+            await deweyModel.addDewey(code, titre, description);
             res.send('Dewey added successfully');
         } catch (error) {
             res.status(500).send('Error adding Dewey');
@@ -25,10 +25,10 @@ class DeweyController {
 
     // UPDATE
     static async updateADewey(req, res) {
-        const { id, titre, description } = req.body;
+        const { code, titre, description } = req.body;
 
         try {
-            await deweyModel.updateDewey(id, titre, description);
+            await deweyModel.updateDewey(code, titre, description);
             res.send('Dewey updated successfully');
         } catch (error) {
             res.status(500).send('Error updating Dewey');
@@ -37,10 +37,10 @@ class DeweyController {
 
     // DELETE
     static async deleteADewey(req, res) {
-        const { id } = req.body;
+        const { code } = req.body;
 
         try {
-            await deweyModel.deleteDewey(id);
+            await deweyModel.deleteDewey(code);
             res.send('Dewey deleted successfully');
         } catch (error) {
             res.status(500).send('Error deleting Dewey');

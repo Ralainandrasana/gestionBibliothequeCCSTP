@@ -71,13 +71,10 @@ SET nbrExemplaireDispo = (
     AND l.disponible = true
 );
 
-
 UPDATE livre SET sous_titre = '' WHERE sous_titre IS NULL;
 UPDATE oeuvre SET sous_titre = '' WHERE sous_titre IS NULL;
 
--- N'OUBLIE PAS D'EDITER lE LIVRE KONAKY
-
--- mis a jour du colonne idOeuvre du livre
+-- mis a jour du colonne idOeuvre du livre AZA HADINO
 UPDATE livre l
 JOIN oeuvre o ON l.titre = o.titre AND l.sous_titre = o.sous_titre AND l.auteur = o.auteur
 SET l.idOeuvre = o.id;
@@ -89,18 +86,5 @@ SET l.idOeuvre = o.id;
 -- update adherent set nbrLivreEmp = 0 where true;
 
 
-
 -- `dewey`(`id`, `titre`, `description`)
-
-`adherent`(`id_adh`, `categorie`, `date_reinscription`, `date_fin`, `type`, `id_pers`, `penaliser`, `sanctionner`, `nbrLivreEmp`)
-
-`app_logs`(`log_id`, `Timestamp`, `Action`, `TableName`, `RecordID`, `SqlQuery`, `UserID`, `ServerIP`, `RequestUrl`, `RequestData`, `RequestCompleted`, `RequestMsg`)
-
-`livre`(`id_livre`, `Type`, `titre`, `sous_titre`, `auteur`, `editeur`, `deway`, `cote`, `ISBN`, `langue_pays`, `dimension`, `nbre_page`, `etat`, `status`, `date_status`, `photo`, `anneeEdition`, `disponible`, `idOeuvre`)
-
-`livre_emprunt`(`id`, `code_pers`, `id_livre`, `date_emprunt`, `date_retour`, `status`, `dateReelRetour`, `renouvelable`)
-
-`oeuvre`(`id`, `titre`, `sous_titre`, `auteur`, `nbrExemplaire`, `nbrExemplaireDispo`)
-
-`personne`(`id`, `code`, `nom`, `prenom`, `date_nais`, `lieu`, `CIN`, `adresse`, `profession`, `departement`, `tel`, `date_inscription`, `photo`)
 

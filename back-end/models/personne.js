@@ -4,7 +4,7 @@ class PersonneModel {
     // READ
     static async getPersonnes() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM personne', [], (error, result) => {
+            db.query('SELECT * FROM personne order by id desc', [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -56,6 +56,32 @@ class PersonneModel {
             });
         });
     }
+    // READ
+    static async getAutoCompletePersonnes(query) {
+        return new Promise((resolve, reject) => {
+            // Utiliser le bon format pour LIKE
+            db.query("SELECT * FROM tripers WHERE tri LIKE ?", [`%${query}%`], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    // READ
+    static async getMatricule() {
+        return new Promise((resolve, reject) => {
+            db.query("select code from personne", [], (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result);
+                }
+            });
+        });
+    }
+    
 }
 
 module.exports = PersonneModel;

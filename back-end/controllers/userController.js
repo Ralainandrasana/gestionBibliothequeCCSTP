@@ -80,7 +80,7 @@ class UserController {
 
     // SUPPRIMER
     static async deleteAnUser(req, res) {
-        const { id } = req.body;
+        const { id } = req.params;
 
         try {
             const userDeleted = await userModel.deleteUser(id);

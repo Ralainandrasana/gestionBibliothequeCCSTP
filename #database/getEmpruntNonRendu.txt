@@ -1,0 +1,3 @@
+SELECT le.id, at.trix, ln.livrcode, le.date_emprunt, le.date_retour FROM (livre_emprunt le left outer join adherent_tri at on le.code_pers = at.id_adh) left outer join livrenum ln on le.id_livre = ln.id_livre where status = 0 and (at.trix is not null and ln.livrcode is not null)order by le.id desc 
+
+select month(date_reinscription) as mois, count(month(date_reinscription)) as effectifIns from adherent where date_reinscription >= DATE_SUB(LAST_DAY(CURDATE()), INTERVAL 10 MONTH)  and date_reinscription <= LAST_DAY(CURDATE()) group by month(date_reinscription);

@@ -15,9 +15,9 @@ class DeweyModel {
     }
 
     // CREATE
-    static async addDewey(titre, description) {
+    static async addDewey(code, titre, description) {
         return new Promise((resolve, reject) => {
-            db.query('INSERT INTO dewey(titre, description) VALUES(?, ?)', [titre, description], (error, result) => {
+            db.query('INSERT INTO dewey(code, titre, description) VALUES(?, ?, ?)', [code, titre, description], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -28,9 +28,9 @@ class DeweyModel {
     }
 
     // UPDATE
-    static async updateDewey(id, titre, description) {
+    static async updateDewey(code, titre, description) {
         return new Promise((resolve, reject) => {
-            db.query('UPDATE dewey SET titre = ?, description = ? WHERE id = ?', [titre, description, id], (error, result) => {
+            db.query('UPDATE dewey SET titre = ?, description = ? WHERE code = ?', [titre, description, code], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -41,9 +41,9 @@ class DeweyModel {
     }
 
     // DELETE
-    static async deleteDewey(id) {
+    static async deleteDewey(code) {
         return new Promise((resolve, reject) => {
-            db.query('DELETE FROM dewey WHERE id = ?', [id], (error, result) => {
+            db.query('DELETE FROM dewey WHERE code = ?', [code], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
