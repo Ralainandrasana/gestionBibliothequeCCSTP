@@ -11,35 +11,49 @@ import EmpruntRendu from './EmpruntRendu';
 import EmpruntNonRendu from './EmpruntNonRendu';
 import EtatDesLivres from './EtatDesLivres';
 import Catalogue from './Catalogue';
-import HistoriqueSysteme from './HistoriqueSysteme'
+import HistoriqueSysteme from './HistoriqueSysteme';
 import Dewey from './Dewey';
 import User from './User';
 import ClassementAdherant from './ClassementAdherant';
 import ClassementLivre from './ClassementLivre';
-import Login from './Login';
 
-function Content(){
-    return <div style={{width: "80%"}} className='content'>
+function Content() {
+  return (
+    <div style={{ width: "80%", padding: '20px', overflow: 'auto' }} className='content'>
       <Routes>
-        <Route path='/dashboard' element={<Dashboard/>}></Route>
-        <Route path='/Adherent/Adherent' element={<Adherent/>}></Route>
-        <Route path='/Adherent/Personne' element={<Personne/>}></Route>
-        <Route path='/GestionBibliotheque/EmpruntLivre/nonRendu' element={<EmpruntNonRendu/>}></Route>
-        <Route path='/GestionBibliotheque/EmpruntLivre/Rendu' element={<EmpruntRendu/>}></Route>
-        <Route path='/GestionBibliotheque/EtatDesLivres' element={<EtatDesLivres/>}></Route>
-        <Route path='/Gestion Ludotheque' element={<div></div>}></Route>
-        <Route path='/Catalogue' element={<Catalogue/>}></Route>
-        <Route path='/Classement/Adherant' element={<ClassementAdherant/>}></Route>
-        <Route path='/Classement/Livre' element={<ClassementLivre/>}></Route>
-        <Route path='/Parametre/Dewey' element={<Dewey/>}></Route>
-        <Route path='/Parametre/Administrateur/HistoriqueSysteme' element={<HistoriqueSysteme/>}></Route>
-        <Route path='/Parametre/Administrateur/User' element={<User/>}></Route>
-        <Route path='/Adherent/Personne/ajoutPersonne' element={<AjoutPersonne/>}></Route>
-        <Route path='/Adherent/Adherent/ajoutAdherent' element={<AjoutAdherent/>}></Route>
-        <Route path='/GestionBibliotheque/EtatDesLivres/ajoutLivre' element={<AjoutLivre/>}></Route>
-        <Route path='/GestionBibliotheque/EmpruntLivre/nonRendu/ajoutEmprunt' element={<AjoutEmprunt/>}></Route>
+        {/* Dashboard */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* Adherent */}
+        <Route path="/Adherent/Adherent" element={<Adherent />} />
+        <Route path="/Adherent/Personne" element={<Personne />} />
+        <Route path="/Adherent/Personne/ajoutPersonne" element={<AjoutPersonne />} />
+        <Route path="/Adherent/Adherent/ajoutAdherent" element={<AjoutAdherent />} />
+        
+        {/* Gestion Bibliotheque */}
+        <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu" element={<EmpruntNonRendu />} />
+        <Route path="/GestionBibliotheque/EmpruntLivre/Rendu" element={<EmpruntRendu />} />
+        <Route path="/GestionBibliotheque/EtatDesLivres" element={<EtatDesLivres />} />
+        <Route path="/GestionBibliotheque/EtatDesLivres/ajoutLivre" element={<AjoutLivre />} />
+        <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/ajoutEmprunt" element={<AjoutEmprunt />} />
+        
+        {/* Catalogue */}
+        <Route path="/Catalogue" element={<Catalogue />} />
+        
+        {/* Classement */}
+        <Route path="/Classement/Adherant" element={<ClassementAdherant />} />
+        <Route path="/Classement/Livre" element={<ClassementLivre />} />
+        
+        {/* Parametre */}
+        <Route path="/Parametre/Dewey" element={<Dewey />} />
+        <Route path="/Parametre/Administrateur/HistoriqueSysteme" element={<HistoriqueSysteme />} />
+        <Route path="/Parametre/Administrateur/User" element={<User />} />
+        
+        {/* Fallback - si aucune route ne correspond */}
+        <Route path="*" element={<Dashboard />} />
       </Routes>
     </div>
-  }
+  );
+}
 
-export default Content
+export default Content;

@@ -1,22 +1,39 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-function Login({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+function Login() {
+  const [nom, setNom] = useState('');
+  const [pswd, setPswd] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = () => {
-    // Simulation d'une authentification basique
-    const mockUser = { username: 'admin', password: 'password' };
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    
+    if (!nom || !pswd) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
 
-    if (username === mockUser.username && password === mockUser.password) {
-      setError('');
-      onLogin(); // Appel de la fonction onLogin pour mettre à jour l'état
-      navigate('/dashboard'); // Redirection vers le tableau de bord
-    } else {
-      setError("Nom d'utilisateur ou mot de passe incorrect.");
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await login(nom, pswd);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.message || 'Erreur de connexion');
+      }
+    } catch (err) {
+      setError('Erreur de connexion au serveur');
+      console.error('Erreur:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -32,34 +49,47 @@ function Login({ onLogin }) {
           <div className="text" style={styles.text}>
             <h1>Connexion</h1>
           </div>
-          <div className="formLogin" style={styles.formLogin}>
+          <form onSubmit={handleLogin} className="formLogin" style={styles.formLogin}>
             <div style={styles.formGroup}>
-              <label htmlFor="username">Utilisateur</label>
+              <label htmlFor="nom">Nom d'utilisateur</label>
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="nom"
+                value={nom}
+                onChange={(e) => setNom(e.target.value)}
                 placeholder="Entrez votre nom d'utilisateur"
                 style={styles.input}
+                disabled={loading}
+                autoComplete="username"
               />
             </div>
             <div style={styles.formGroup}>
-              <label htmlFor="password">Mot de passe</label>
+              <label htmlFor="pswd">Mot de passe</label>
               <input
                 type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                id="pswd"
+                value={pswd}
+                onChange={(e) => setPswd(e.target.value)}
                 placeholder="Entrez votre mot de passe"
                 style={styles.input}
+                disabled={loading}
+                autoComplete="current-password"
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin(e)}
               />
             </div>
             {error && <p style={styles.error}>{error}</p>}
-            <button onClick={handleLogin} style={styles.button}>
-              Se connecter
+            <button 
+              type="submit"
+              style={{
+                ...styles.button,
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+              disabled={loading}
+            >
+              {loading ? 'Connexion en cours...' : 'Se connecter'}
             </button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
@@ -121,6 +151,7 @@ const styles = {
     backgroundColor: '#007BFF',
     color: '#fff',
     cursor: 'pointer',
+    transition: 'background-color 0.3s',
   },
   error: {
     color: 'red',

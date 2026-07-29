@@ -6,7 +6,7 @@ import './index.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter>  {/* ✅ UN SEUL ROUTER ICI */}
       <App />
     </BrowserRouter>
   </StrictMode>

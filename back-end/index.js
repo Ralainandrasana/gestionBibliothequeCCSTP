@@ -1,26 +1,46 @@
-// IMPORT DEPENDANCES
 const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
+const session = require('express-session');
+const cors = require('cors');
+const dotenv = require('dotenv');
+const authRoutes = require('./routes/authRoutes');
 const crudRout = require('./routes/crudRouter');
 const otherRout = require('./routes/otherRouter');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
 
-// VARIABLE D'ENVIRONNEMENT
-const PORT = 3000;
+dotenv.config();
 
-// UTILISATION DES MIDDLEWARES
-app.use(cors());
-app.use(cookieParser()); 
-app.use(bodyParser.json()); // Pour les requêtes avec des données JSON
-app.use(bodyParser.urlencoded({ extended: true })); // Pour les données envoyées via formulaire
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-// ROUTES
+// ✅ CONFIGURATION CORS CORRECTE
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],  // Ajouter les deux ports
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Configuration des sessions
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'dev_secret_key_change_in_production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  },
+  name: 'bibliotheque.sid'
+}));
+
+// Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/crud', crudRout); // Utilisation de routes avec point de montage
 app.use('/api/other', otherRout);
 
-// ECOUTE AU PORT
 app.listen(PORT, () => {
-    console.log('server is running on port ' + PORT);
+  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
 });

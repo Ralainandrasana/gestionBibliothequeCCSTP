@@ -1,15 +1,68 @@
 import React from 'react';
-import { DownOutlined, LogoutOutlined } from '@ant-design/icons';
-import { Dropdown, Menu } from 'antd';
+import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
+import { Dropdown, Menu, Avatar } from 'antd';
+import { useAuth } from '../context/AuthContext';
 
 function Header({ onLogout }) {
+  const { user } = useAuth();
+
+  // Menu de déconnexion
   const menu = (
     <Menu>
+      <Menu.Item key="profile" icon={<UserOutlined />}>
+        Profil
+      </Menu.Item>
       <Menu.Item key="logout" onClick={onLogout} icon={<LogoutOutlined />}>
         Déconnexion
       </Menu.Item>
     </Menu>
   );
+
+  // Fonction pour obtenir les initiales de l'utilisateur
+  const getInitials = () => {
+    if (!user) return 'U';
+    const nom = user.nom || '';
+    const prenom = user.prenom || '';
+    if (prenom && nom) {
+      return `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+    }
+    return nom.charAt(0).toUpperCase() || 'U';
+  };
+
+  // Fonction pour obtenir le nom complet
+  const getFullName = () => {
+    if (!user) return 'Utilisateur';
+    if (user.prenom && user.nom) {
+      return `${user.prenom} ${user.nom}`;
+    }
+    return user.nom || user.username || 'Utilisateur';
+  };
+
+  // Fonction pour obtenir le rôle affiché
+  const getRoleDisplay = () => {
+    if (!user) return 'Utilisateur';
+    const roles = user.roles || 'user';
+    const roleMap = {
+      'admin': 'Administrateur',
+      'bibliothecaire': 'Bibliothécaire',
+      'user': 'Utilisateur'
+    };
+    // Si plusieurs rôles, prendre le premier
+    const firstRole = roles.split(',')[0].trim();
+    return roleMap[firstRole] || firstRole || 'Utilisateur';
+  };
+
+  // Fonction pour obtenir la photo de profil
+  const getAvatar = () => {
+    if (user?.photo) {
+      return <Avatar src={user.photo} size={40} />;
+    }
+    return (
+      <Avatar style={{ backgroundColor: '#215CDE' }} size={40}>
+        {getInitials()}
+      </Avatar>
+    );
+  };
 
   return (
     <div style={{ background: 'white', color: '#215CDE' }} className="header">
@@ -23,13 +76,13 @@ function Header({ onLogout }) {
       </div>
       <div className="user">
         <div className="photo">
-          <img src="/image/profil.png" alt="profil utilisateur" />
+          {getAvatar()}
         </div>
         <Dropdown overlay={menu} trigger={['click']} className='logout'>
-          <div style={{ cursor: 'pointer' }}>
+          <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div className="nomEtRole">
-              <h5>Mijoro</h5>
-              <h6>Admin</h6>
+              <h5 style={{ margin: 0 }}>{getFullName()}</h5>
+              <h6 style={{ margin: 0, color: '#888', fontSize: '12px' }}>{getRoleDisplay()}</h6>
             </div>
             <div className="arrowDown">
               <DownOutlined />
