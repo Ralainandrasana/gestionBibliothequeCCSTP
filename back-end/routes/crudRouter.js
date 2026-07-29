@@ -15,7 +15,7 @@ router.use(authMiddleware);
 
 //CRUD table User
 router.get('/users', roleMiddleware(STAFF_ROLES), userController.getAllUser) //Read
-router.post('/register', roleMiddleware([ROLES.ADMIN]), userController.addNewUser) //Create
+router.post('/register', roleMiddleware([ROLES.ADMIN]), upload.single('photo'), userController.addNewUser) //Create
 router.put('/users', roleMiddleware([ROLES.ADMIN]), userController.updateAnUser) //Update
 router.delete('/users/:id', roleMiddleware([ROLES.ADMIN]), userController.deleteAnUser) //Delete
 

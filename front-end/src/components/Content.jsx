@@ -16,6 +16,7 @@ import Dewey from './Dewey';
 import User from './User';
 import ClassementAdherant from './ClassementAdherant';
 import ClassementLivre from './ClassementLivre';
+import AjoutUtilisateur from '../forms/AjoutUtilisateur';
 import ProtectedRoute from './ProtectedRoute';
 import Unauthorized from './Unauthorized';
 import { ALL_ROLES, CATALOGUE_ROLES, ROLES, STAFF_ROLES } from '../config/accessControl';
@@ -55,6 +56,7 @@ function Content() {
         <Route path="/Parametre/Dewey" element={withRoles(<Dewey />, STAFF_ROLES)} />
         <Route path="/Parametre/Administrateur/HistoriqueSysteme" element={withRoles(<HistoriqueSysteme />, [ROLES.ADMIN])} />
         <Route path="/Parametre/Administrateur/User" element={withRoles(<User />, STAFF_ROLES)} />
+        <Route path="/Parametre/Administrateur/User/ajoutUtilisateur" element={withRoles(<AjoutUtilisateur />, [ROLES.ADMIN])} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         
         {/* Fallback - si aucune route ne correspond */}

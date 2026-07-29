@@ -26,7 +26,7 @@ function TablePersonne() {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate('/Adherent/Personne/ajoutPersonne');
+    navigate('/Parametre/Administrateur/User/ajoutUtilisateur');
   };
 
   const fetchData = async () => {

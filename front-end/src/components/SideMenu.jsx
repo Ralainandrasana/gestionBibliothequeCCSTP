@@ -27,6 +27,7 @@ function SideMenu() {
     '/Parametre/Dewey': ['/Paramètre'],
     '/Parametre/Administrateur/HistoriqueSysteme': ['/Paramètre', '/Parametre/Administrateur'],
     '/Parametre/Administrateur/User': ['/Paramètre', '/Parametre/Administrateur'],
+    '/Parametre/Administrateur/User/ajoutUtilisateur': ['/Paramètre', '/Parametre/Administrateur'],
   };
 
   // ✅ Mettre à jour quand l'URL change
