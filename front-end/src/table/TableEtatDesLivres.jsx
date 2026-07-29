@@ -5,6 +5,8 @@ import axios from 'axios';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import height from './height';
+import { useAuth } from '../context/AuthContext';
+import { hasAnyRole, ROLES } from '../config/accessControl';
 import 'moment/locale/fr';
 
 moment.locale('fr');
@@ -12,6 +14,8 @@ moment.locale('fr');
 const { Column } = Table;
 
 function TableEtatDesLivres() {
+  const { user } = useAuth();
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -122,9 +126,9 @@ useEffect(() => {
               <Space size="middle">
                 <a className='iconAction'><EyeOutlined /></a>
                 <a className='iconAction'><EditOutlined /></a>
-                <a className='iconAction'>
+                {isAdmin && <a className='iconAction'>
                   <DeleteOutlined />
-                </a>
+                </a>}
               </Space>
             )}
           />

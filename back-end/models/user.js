@@ -141,6 +141,19 @@ class UserModel {
 		});
 	}
 
+	// UPDATE - Mettre à jour le rôle applicatif
+	static async updateRole(userId, role) {
+		return new Promise((resolve, reject) => {
+			db.query('UPDATE user SET roles = ? WHERE id = ?', [role, userId], (error, result) => {
+				if (error) {
+					reject(error);
+				} else {
+					resolve(result);
+				}
+			});
+		});
+	}
+
 	// UPDATE - Mettre à jour le mot de passe
 	static async updatePassword(userId, newPassword) {
 		const hashedPassword = await bcrypt.hash(newPassword, 10);

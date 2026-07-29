@@ -2,6 +2,7 @@ import React from 'react';
 import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Dropdown, Menu, Avatar } from 'antd';
 import { useAuth } from '../context/AuthContext';
+import { normalizeRole, ROLES } from '../config/accessControl';
 
 function Header({ onLogout }) {
   const { user } = useAuth();
@@ -43,12 +44,13 @@ function Header({ onLogout }) {
     if (!user) return 'Utilisateur';
     const roles = user.roles || 'user';
     const roleMap = {
-      'admin': 'Administrateur',
+      [ROLES.ADMIN]: 'Administrateur',
       'bibliothecaire': 'Bibliothécaire',
-      'user': 'Utilisateur'
+      [ROLES.USER]: 'Utilisateur',
+      [ROLES.INVITER]: 'Invité'
     };
     // Si plusieurs rôles, prendre le premier
-    const firstRole = roles.split(',')[0].trim();
+    const firstRole = normalizeRole(roles.split(',')[0]);
     return roleMap[firstRole] || firstRole || 'Utilisateur';
   };
 

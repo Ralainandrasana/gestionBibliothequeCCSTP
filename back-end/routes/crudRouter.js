@@ -8,58 +8,58 @@ const personneController = require('../controllers/personneController')
 const livreEmpruntController = require('../controllers/livreEmpruntController')
 const appLogsController = require('../controllers/appLogsController')
 const upload = require('../config/upload');
+const { authMiddleware, roleMiddleware } = require('../middleware/auth');
+const { ROLES, STAFF_ROLES, ALL_ROLES } = require('../config/accessControl');
+
+router.use(authMiddleware);
 
 //CRUD table User
-router.get('/users', userController.getAllUser) //Read
-router.post('/register', userController.addNewUser) //Create
-router.put('/users', userController.updateAnUser) //Update
-router.delete('/users/:id', userController.deleteAnUser) //Delete
-
-//login and logout
-router.post('/login', userController.login) //Create
-router.post('/logout', userController.addNewUser) //Create
+router.get('/users', roleMiddleware(STAFF_ROLES), userController.getAllUser) //Read
+router.post('/register', roleMiddleware([ROLES.ADMIN]), userController.addNewUser) //Create
+router.put('/users', roleMiddleware([ROLES.ADMIN]), userController.updateAnUser) //Update
+router.delete('/users/:id', roleMiddleware([ROLES.ADMIN]), userController.deleteAnUser) //Delete
 
 // CRUD table Dewey
-router.get('/Deweys', deweyController.getAllDeweys); // Read
-router.post('/Deweys', deweyController.addNewDewey); // Create
-router.put('/Deweys', deweyController.updateADewey); // Update
-router.delete('/Deweys', deweyController.deleteADewey); // Delete
+router.get('/Deweys', roleMiddleware(STAFF_ROLES), deweyController.getAllDeweys); // Read
+router.post('/Deweys', roleMiddleware(STAFF_ROLES), deweyController.addNewDewey); // Create
+router.put('/Deweys', roleMiddleware(STAFF_ROLES), deweyController.updateADewey); // Update
+router.delete('/Deweys', roleMiddleware([ROLES.ADMIN]), deweyController.deleteADewey); // Delete
 
 //adherents
-router.get('/adherents', adherentController.getAllAdherents);
-router.post('/adherents',  upload.none(), adherentController.addNewAdherent);
-router.put('/adherents', adherentController.updateAdherent);
-router.delete('/adherents/:id_adh', adherentController.deleteAdherent);
+router.get('/adherents', roleMiddleware(STAFF_ROLES), adherentController.getAllAdherents);
+router.post('/adherents', roleMiddleware(STAFF_ROLES), upload.none(), adherentController.addNewAdherent);
+router.put('/adherents', roleMiddleware(STAFF_ROLES), adherentController.updateAdherent);
+router.delete('/adherents/:id_adh', roleMiddleware([ROLES.ADMIN]), adherentController.deleteAdherent);
 
 // App Logs routes
-router.get('/app_logs', appLogsController.getAllAppLogs);
-router.post('/app_logs', appLogsController.addNewAppLog);
-router.delete('/app_logs', appLogsController.deleteAppLog);
+router.get('/app_logs', roleMiddleware([ROLES.ADMIN]), appLogsController.getAllAppLogs);
+router.post('/app_logs', roleMiddleware([ROLES.ADMIN]), appLogsController.addNewAppLog);
+router.delete('/app_logs', roleMiddleware([ROLES.ADMIN]), appLogsController.deleteAppLog);
 
 // Livre routes
-router.get('/livres', livreController.getAllLivres);
-router.post('/livres',  upload.none(), livreController.addNewLivre);
-router.put('/livres', livreController.updateLivre);
-router.delete('/livres', livreController.deleteLivre);
+router.get('/livres', roleMiddleware(ALL_ROLES), livreController.getAllLivres);
+router.post('/livres', roleMiddleware(STAFF_ROLES), upload.none(), livreController.addNewLivre);
+router.put('/livres', roleMiddleware(STAFF_ROLES), livreController.updateLivre);
+router.delete('/livres', roleMiddleware([ROLES.ADMIN]), livreController.deleteLivre);
 
 // Livre Emprunt routes
-router.get('/livre_emprunts_recent', livreEmpruntController.getAllLivreEmpruntsRecent);
-router.get('/livre_emprunts_non_rendu', livreEmpruntController.getAllLivreEmpruntsNonRendu);
-router.post('/livre_emprunts', upload.none(),livreEmpruntController.addNewLivreEmprunt);
-router.put('/livre_emprunts', livreEmpruntController.updateLivreEmprunt);
-router.delete('/livre_emprunts/:id', livreEmpruntController.deleteLivreEmprunt);
+router.get('/livre_emprunts_recent', roleMiddleware(STAFF_ROLES), livreEmpruntController.getAllLivreEmpruntsRecent);
+router.get('/livre_emprunts_non_rendu', roleMiddleware(STAFF_ROLES), livreEmpruntController.getAllLivreEmpruntsNonRendu);
+router.post('/livre_emprunts', roleMiddleware(STAFF_ROLES), upload.none(),livreEmpruntController.addNewLivreEmprunt);
+router.put('/livre_emprunts', roleMiddleware(STAFF_ROLES), livreEmpruntController.updateLivreEmprunt);
+router.delete('/livre_emprunts/:id', roleMiddleware([ROLES.ADMIN]), livreEmpruntController.deleteLivreEmprunt);
 
 // Oeuvre routes
-router.get('/oeuvres', oeuvreController.getAllOeuvres);
-router.post('/oeuvres', oeuvreController.addNewOeuvre);
-router.put('/oeuvres', oeuvreController.updateOeuvre);
-router.delete('/oeuvres', oeuvreController.deleteOeuvre);
+router.get('/oeuvres', roleMiddleware(STAFF_ROLES), oeuvreController.getAllOeuvres);
+router.post('/oeuvres', roleMiddleware(STAFF_ROLES), oeuvreController.addNewOeuvre);
+router.put('/oeuvres', roleMiddleware(STAFF_ROLES), oeuvreController.updateOeuvre);
+router.delete('/oeuvres', roleMiddleware([ROLES.ADMIN]), oeuvreController.deleteOeuvre);
 
 // Personne routes
-router.get('/personnes', personneController.getAllPersonnes);
-router.post('/personnes', upload.single('photo'), personneController.addNewPersonne);
-router.put('/personnes', personneController.updatePersonne);
-router.delete('/personnes/:id', personneController.deletePersonne);
+router.get('/personnes', roleMiddleware(STAFF_ROLES), personneController.getAllPersonnes);
+router.post('/personnes', roleMiddleware(STAFF_ROLES), upload.single('photo'), personneController.addNewPersonne);
+router.put('/personnes', roleMiddleware(STAFF_ROLES), personneController.updatePersonne);
+router.delete('/personnes/:id', roleMiddleware([ROLES.ADMIN]), personneController.deletePersonne);
 
 module.exports = router
 

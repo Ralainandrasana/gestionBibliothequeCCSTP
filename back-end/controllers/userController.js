@@ -1,6 +1,12 @@
 const userModel = require("../models/user");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { ALL_ROLES, normalizeRole } = require('../config/accessControl');
+
+const validateRole = (role) => {
+    const normalizedRole = normalizeRole(role);
+    return ALL_ROLES.includes(normalizedRole) ? normalizedRole : null;
+};
 
 class UserController {
     // LIRE
@@ -34,11 +40,16 @@ class UserController {
             const userExists = await userModel.checkUserIfExist(nom);
             if (userExists) return res.status(409).json({ message: "L'utilisateur existe déjà." });
 
+            const normalizedRole = validateRole(roles);
+            if (!normalizedRole) {
+                return res.status(400).json({ message: "Rôle utilisateur invalide." });
+            }
+
             // Hachage du mot de passe
             const hashedPassword = await bcrypt.hash(pswd, 10);
 
             // Ajout de l'utilisateur
-            const userAdded = await userModel.addUser(nom, hashedPassword, email, photo, roles, login_session_key, email_status, password_reset_key, account_status, user_role_id);
+            const userAdded = await userModel.addUser(nom, hashedPassword, email, photo, normalizedRole, login_session_key, email_status, password_reset_key, account_status, user_role_id);
             if (userAdded) res.status(201).send('Utilisateur ajouté avec succès.');
             else res.status(400).send('Erreur lors de l’ajout de l’utilisateur.');
         } catch (error) {
@@ -63,6 +74,11 @@ class UserController {
         } = req.body;
         
         try {
+            const normalizedRole = validateRole(roles);
+            if (!normalizedRole) {
+                return res.status(400).json({ message: "Rôle utilisateur invalide." });
+            }
+
             // Hachage du mot de passe si fourni
             let hashedPassword = pswd;
             if (pswd) {
@@ -70,7 +86,7 @@ class UserController {
             }
 
             // Mise à jour de l'utilisateur
-            const userUpdated = await userModel.updateUser(id, nom, hashedPassword, email, photo, roles, login_session_key, email_status, password_reset_key, account_status, user_role_id);
+            const userUpdated = await userModel.updateUser(id, nom, hashedPassword, email, photo, normalizedRole, login_session_key, email_status, password_reset_key, account_status, user_role_id);
             if (userUpdated) res.status(200).send('Utilisateur mis à jour avec succès.');
             else res.status(400).send('Erreur lors de la mise à jour de l’utilisateur.');
         } catch (error) {
@@ -83,6 +99,10 @@ class UserController {
         const { id } = req.params;
 
         try {
+            if (Number(id) === Number(req.session.userId)) {
+                return res.status(400).json({ message: "Vous ne pouvez pas supprimer votre propre compte." });
+            }
+
             const userDeleted = await userModel.deleteUser(id);
             if (userDeleted) res.status(200).send('Utilisateur supprimé avec succès.');
             else res.status(400).send('Erreur lors de la suppression de l’utilisateur.');

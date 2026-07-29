@@ -1,16 +1,44 @@
+const { normalizeRole } = require('../config/accessControl');
+
 // Middleware d'authentification de base
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
 	if (!req.session.userId) {
 		return res.status(401).json({
 			success: false,
 			message: 'Non authentifié'
 		});
 	}
-	next();
+
+	try {
+		const UserModel = require('../models/User');
+		const user = await UserModel.getUserById(req.session.userId);
+		const accountStatus = String(user?.account_status || '').trim().toLowerCase();
+
+		if (!user || accountStatus !== 'active') {
+			req.session.destroy(() => {});
+			return res.status(401).json({
+				success: false,
+				message: 'Session invalide ou compte inactif'
+			});
+		}
+
+		// Le rôle est relu depuis la base pour appliquer immédiatement un changement admin.
+		req.session.roles = normalizeRole(user.roles);
+		req.user = user;
+		next();
+	} catch (error) {
+		console.error('Erreur lors de la vérification de la session:', error);
+		return res.status(500).json({
+			success: false,
+			message: 'Erreur serveur'
+		});
+	}
 };
 
 // Middleware pour vérifier les rôles
 const roleMiddleware = (roles) => {
+	const allowedRoles = roles.map(normalizeRole);
+
 	return (req, res, next) => {
 		if (!req.session.userId) {
 			return res.status(401).json({
@@ -20,10 +48,13 @@ const roleMiddleware = (roles) => {
 		}
 		
 		// Vérifier si l'utilisateur a le rôle requis
-		const userRoles = req.session.roles || 'user';
-		const userRolesArray = userRoles.split(',').map(r => r.trim());
+		const userRoles = req.session.roles || '';
+		const userRolesArray = String(userRoles)
+			.split(',')
+			.map(normalizeRole)
+			.filter(Boolean);
 		
-		const hasRole = roles.some(role => userRolesArray.includes(role));
+		const hasRole = allowedRoles.some(role => userRolesArray.includes(role));
 		
 		if (!hasRole) {
 			return res.status(403).json({

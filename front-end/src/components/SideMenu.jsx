@@ -2,10 +2,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { DashboardOutlined, TeamOutlined, TableOutlined, PlayCircleOutlined, ProfileOutlined, StarOutlined, SettingOutlined } from '@ant-design/icons';
 import { Menu } from 'antd';
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { ALL_ROLES, CATALOGUE_ROLES, hasAnyRole, ROLES, STAFF_ROLES } from '../config/accessControl';
 
 function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   
   const [selectedKey, setSelectedKey] = useState('/dashboard');
   const [openKeys, setOpenKeys] = useState([]);
@@ -129,6 +132,38 @@ function SideMenu() {
     },
   ];
 
+  const menuRoles = {
+    '/dashboard': ALL_ROLES,
+    '/Adherent': STAFF_ROLES,
+    '/Gestion Bibliotheque': STAFF_ROLES,
+    '/Gestion Ludotheque': STAFF_ROLES,
+    '/Catalogue': CATALOGUE_ROLES,
+    '/Classement': [ROLES.ADMIN],
+    '/Paramètre': STAFF_ROLES,
+    '/Parametre/Administrateur/HistoriqueSysteme': [ROLES.ADMIN],
+  };
+
+  const filterMenuItems = (items, inheritedRoles = ALL_ROLES) =>
+    items.reduce((visibleItems, item) => {
+      const allowedRoles = menuRoles[item.key] || inheritedRoles;
+      if (!hasAnyRole(user, allowedRoles)) {
+        return visibleItems;
+      }
+
+      const menuItem = { ...item };
+      if (item.children) {
+        menuItem.children = filterMenuItems(item.children, allowedRoles);
+        if (menuItem.children.length === 0) {
+          return visibleItems;
+        }
+      }
+
+      visibleItems.push(menuItem);
+      return visibleItems;
+    }, []);
+
+  const visibleMenuItems = filterMenuItems(menuItems);
+
   return (
     <Menu 
       style={{ width: "20%", height: "100%", paddingTop: "15px" }}
@@ -137,7 +172,7 @@ function SideMenu() {
       openKeys={openKeys}
       onOpenChange={onOpenChange}
       onClick={handleMenuClick}
-      items={menuItems}
+      items={visibleMenuItems}
     />
   );
 }

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
 import dayjs from 'dayjs';
 import height from './height';
+import { useAuth } from '../context/AuthContext';
+import { hasAnyRole, ROLES } from '../config/accessControl';
 import 'moment/locale/fr';
 
 moment.locale('fr');
@@ -16,6 +18,8 @@ const today = dayjs();
 
 
 function TableEmpruntNonRendu() {
+  const { user } = useAuth();
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const [matricule, setMatricule] = useState([]);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -234,7 +238,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
         <div className="left">
           <h2 className="titreTable">Liste Emprunt</h2>
           <Button type="primary" onClick={handleClick}>+ Nouveau</Button>
-          {selectedRowKeys.length > 0 && (
+          {isAdmin && selectedRowKeys.length > 0 && (
             <Button type="danger" onClick={handleDeleteSelected} style={{ marginLeft: 10 }}>
               Supprimer Sélection
             </Button>
@@ -248,7 +252,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
         <Table 
           dataSource={filteredData} 
           rowKey="id"
-          rowSelection={rowSelection} // Ajouter la sélection multiple
+          rowSelection={isAdmin ? rowSelection : undefined}
           scroll={{ y: height, x: '100%' }}
           loading={loading}
           pagination={{
@@ -318,7 +322,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
               <Space size="middle">
                 <a className="iconAction"><EyeOutlined /></a>
                 <a className="iconAction"><EditOutlined /></a>
-                <a className="iconAction" onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>
+                {isAdmin && <a className="iconAction" onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>}
               </Space>
             )}
           />

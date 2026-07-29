@@ -1,5 +1,8 @@
 const UserModel = require('../models/User');
 const crypto = require('crypto');
+const { ROLES, normalizeRole } = require('../config/accessControl');
+
+const isActiveAccount = (status) => String(status || '').trim().toLowerCase() === 'active';
 
 const authController = {
 	// Connexion
@@ -26,7 +29,7 @@ const authController = {
 			}
 
 			// Vérifier le statut du compte
-			if (user.account_status === 'inactive' || user.account_status === 'blocked') {
+			if (!isActiveAccount(user.account_status)) {
 				return res.status(403).json({
 					success: false,
 					message: 'Votre compte est désactivé. Veuillez contacter l\'administrateur.'
@@ -52,7 +55,8 @@ const authController = {
 			// Création de la session
 			req.session.userId = user.id;
 			req.session.nom = user.nom;
-			req.session.roles = user.roles;
+			const role = normalizeRole(user.roles);
+			req.session.roles = role;
 			req.session.email = user.email;
 			req.session.sessionKey = sessionKey;
 
@@ -62,7 +66,7 @@ const authController = {
 				nom: user.nom,
 				email: user.email,
 				photo: user.photo,
-				roles: user.roles,
+				roles: role,
 				user_role_id: user.user_role_id,
 				email_status: user.email_status,
 				account_status: user.account_status
@@ -98,7 +102,7 @@ const authController = {
 						message: 'Erreur lors de la déconnexion'
 					});
 				}
-				res.clearCookie('connect.sid');
+				res.clearCookie('bibliotheque.sid');
 				res.json({
 					success: true,
 					message: 'Déconnexion réussie'
@@ -134,13 +138,16 @@ const authController = {
 			}
 
 			// Vérifier le statut du compte
-			if (user.account_status === 'inactive' || user.account_status === 'blocked') {
+			if (!isActiveAccount(user.account_status)) {
 				req.session.destroy();
 				return res.status(403).json({
 					success: false,
 					message: 'Compte désactivé'
 				});
 			}
+
+			const role = normalizeRole(user.roles);
+			req.session.roles = role;
 
 			res.json({
 				success: true,
@@ -149,7 +156,7 @@ const authController = {
 					nom: user.nom,
 					email: user.email,
 					photo: user.photo,
-					roles: user.roles,
+					roles: role,
 					user_role_id: user.user_role_id,
 					email_status: user.email_status,
 					account_status: user.account_status
@@ -167,7 +174,7 @@ const authController = {
 	// Inscription
 	async register(req, res) {
 		try {
-			const { nom, pswd, email, photo = null, user_role_id = 1 } = req.body;
+			const { nom, pswd, email, photo = null } = req.body;
 
 			// Validation
 			if (!nom || !pswd || !email) {
@@ -198,11 +205,13 @@ const authController = {
 			const hashedPassword = await UserModel.hashPassword(pswd);
 
 			// Définir les valeurs par défaut
-			const roles = 'user';
+			// Une inscription publique reçoit toujours le rôle le moins privilégié.
+			const roles = ROLES.INVITER;
+			const user_role_id = Number(process.env.DEFAULT_REGISTER_ROLE_ID || 1);
 			const login_session_key = null;
 			const email_status = 'pending';
 			const password_reset_key = null;
-			const account_status = 'active';
+			const account_status = 'pending';
 
 			// Créer l'utilisateur
 			const result = await UserModel.addUser(
@@ -375,8 +384,7 @@ const authController = {
 				
 				res.json({
 					success: true,
-					message: 'Un email de réinitialisation a été envoyé',
-					resetKey // À supprimer en production, utilisé pour le test
+					message: 'Un email de réinitialisation a été envoyé'
 				});
 			} else {
 				res.status(500).json({

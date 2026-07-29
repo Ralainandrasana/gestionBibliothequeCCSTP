@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
 import height from './height';
+import { useAuth } from '../context/AuthContext';
+import { hasAnyRole, ROLES } from '../config/accessControl';
 import 'moment/locale/fr';
 moment.locale('fr');
 
@@ -12,6 +14,8 @@ const { Column } = Table;
 const { confirm } = Modal;
 
 function TablePersonne() {
+  const { user } = useAuth();
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,12 +141,12 @@ function TablePersonne() {
           pagination={{
             showTotal: (total) => `Total des personnes : ${total}`,
           }}
-          rowSelection={{
+          rowSelection={isAdmin ? {
             selectedRowKeys,
             onChange: (selectedRowKeys) => {
               setSelectedRowKeys(selectedRowKeys);
             },
-          }}
+          } : undefined}
         >
           <Column title="M°" dataIndex="code" key="code" width={70}/>
           <Column 
@@ -182,7 +186,7 @@ function TablePersonne() {
               <Space size="middle">
                 <a className='iconAction'><EyeOutlined /></a>
                 <a className='iconAction'><EditOutlined /></a>
-                <a className='iconAction' onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>
+                {isAdmin && <a className='iconAction' onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>}
               </Space>
             )}
           />

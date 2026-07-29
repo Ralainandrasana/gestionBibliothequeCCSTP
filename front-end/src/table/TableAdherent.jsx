@@ -6,13 +6,16 @@ import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import moment from 'moment';
 import 'moment/locale/fr';
 import height from './height';
+import { useAuth } from '../context/AuthContext';
+import { hasAnyRole, ROLES } from '../config/accessControl';
 moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;
 
 function TableAdherent() {
-
+  const { user } = useAuth();
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -111,7 +114,7 @@ function TableAdherent() {
       </div>
       <div className="table">
         <Table
-          rowSelection={rowSelection}
+          rowSelection={isAdmin ? rowSelection : undefined}
           dataSource={filteredData}
           loading={loading}
           pagination={{ showTotal: (total) => `Total : ${total}` }}
@@ -160,9 +163,9 @@ function TableAdherent() {
               <Space size="middle">
                 <a className='iconAction'><EyeOutlined /></a>
                 <a className='iconAction'><EditOutlined /></a>
-                <a className='iconAction' onClick={() => showDeleteConfirm([record.id_adh])}>
+                {isAdmin && <a className='iconAction' onClick={() => showDeleteConfirm([record.id_adh])}>
                   <DeleteOutlined />
-                </a>
+                </a>}
               </Space>
             )}
           />

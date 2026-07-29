@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
 import height from './height';
+import { useAuth } from '../context/AuthContext';
+import { hasAnyRole, normalizeRole, ROLES } from '../config/accessControl';
 import 'moment/locale/fr';
 moment.locale('fr');
 
@@ -12,6 +14,8 @@ const { Column } = Table;
 const { confirm } = Modal;
 
 function TablePersonne() {
+  const { user } = useAuth();
+  const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,6 +89,34 @@ function TablePersonne() {
     });
   };
 
+  const updateLocalUser = (id, changes) => {
+    setData((currentData) =>
+      currentData.map((currentUser) =>
+        currentUser.id === id ? { ...currentUser, ...changes } : currentUser
+      )
+    );
+  };
+
+  const handleRoleChange = async (id, roles) => {
+    try {
+      await axios.put(`http://localhost:3000/api/auth/admin/users/${id}/role`, { roles });
+      updateLocalUser(id, { roles });
+      message.success('Rôle utilisateur mis à jour.');
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Erreur lors de la modification du rôle.');
+    }
+  };
+
+  const handleStatusChange = async (id, account_status) => {
+    try {
+      await axios.put(`http://localhost:3000/api/auth/admin/users/${id}/status`, { account_status });
+      updateLocalUser(id, { account_status });
+      message.success('Statut du compte mis à jour.');
+    } catch (error) {
+      message.error(error.response?.data?.message || 'Erreur lors de la modification du statut.');
+    }
+  };
+
   const handleDeleteMultiple = () => {
     confirm({
       title: 'Êtes-vous sûr de vouloir supprimer ces personnes?',
@@ -116,7 +148,7 @@ function TablePersonne() {
       <div className="bouton">
         <div className="left">
           <h2 className="titreTable">Utilisateur</h2>
-          <Button type='primary' onClick={handleClick}>+ Nouveau</Button>
+          {isAdmin && <Button type='primary' onClick={handleClick}>+ Nouveau</Button>}
         </div>
         <div className="right">
           <Input placeholder='Rechercher...' onChange={(e) => handleSearch(e.target.value)} />
@@ -131,12 +163,12 @@ function TablePersonne() {
           pagination={{
             showTotal: (total) => `Total des personnes : ${total}`,
           }}
-          rowSelection={{
+          rowSelection={isAdmin ? {
             selectedRowKeys,
             onChange: (selectedRowKeys) => {
               setSelectedRowKeys(selectedRowKeys);
             },
-          }}
+          } : undefined}
         >
           <Column title="id" dataIndex="id" key="id" width={70}/>
           <Column 
@@ -160,16 +192,48 @@ function TablePersonne() {
           />
           <Column title="Nom" dataIndex="nom" key="nom" />
           <Column title="Email" dataIndex="email" key="Email" width={300}/>
-          <Column title="Roles" dataIndex="roles" key="Roles" />
-          <Column title="Status Compte" dataIndex="account_status" key="status" />
+          <Column
+            title="Roles"
+            dataIndex="roles"
+            key="Roles"
+            render={(roles, record) => isAdmin ? (
+              <Select
+                value={normalizeRole(roles)}
+                style={{ width: 130 }}
+                onChange={(value) => handleRoleChange(record.id, value)}
+                options={[
+                  { value: ROLES.ADMIN, label: 'Administrateur' },
+                  { value: ROLES.USER, label: 'Utilisateur' },
+                  { value: ROLES.INVITER, label: 'Invité' },
+                ]}
+              />
+            ) : roles}
+          />
+          <Column
+            title="Status Compte"
+            dataIndex="account_status"
+            key="status"
+            render={(status, record) => isAdmin ? (
+              <Select
+                value={String(status || '').toLowerCase()}
+                style={{ width: 120 }}
+                onChange={(value) => handleStatusChange(record.id, value)}
+                options={[
+                  { value: 'active', label: 'Actif' },
+                  { value: 'pending', label: 'En attente' },
+                  { value: 'blocked', label: 'Bloqué' },
+                ]}
+              />
+            ) : status}
+          />
           <Column
             title="Action"
             key="action"
             render={(_, record) => (
               <Space size="middle">
                 <a className='iconAction'><EyeOutlined /></a>
-                <a className='iconAction'><EditOutlined /></a>
-                <a className='iconAction' onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>
+                {isAdmin && <a className='iconAction'><EditOutlined /></a>}
+                {isAdmin && <a className='iconAction' onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>}
               </Space>
             )}
           />
