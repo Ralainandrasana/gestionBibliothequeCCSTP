@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './components/Login';
+import Register from './components/Register';
 import SideMenu from './components/SideMenu';
 import Content from './components/Content';
 import Header from './components/Header';
@@ -25,9 +26,10 @@ function AppLayout() {
 function App() {
   return (
     <AuthProvider>
-      <div className="App" style={{ height: '100vh', width: '100vw' }}>
+      <div className="App" style={{ minHeight: '100vh', width: '100%' }}>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route 
             path="/*" 
             element={

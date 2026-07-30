@@ -3,10 +3,11 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { ALL_ROLES, ROLES, normalizeRole } = require('../config/accessControl');
+const upload = require('../config/upload');
 
 // Routes publiques
 router.post('/login', authController.login);
-router.post('/register', authController.register);
+router.post('/register', upload.single('photo'), authController.register);
 router.get('/check-session', authController.checkSession);
 router.post('/request-password-reset', authController.requestPasswordReset);
 router.post('/reset-password', authController.resetPassword);

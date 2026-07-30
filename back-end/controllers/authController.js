@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const { ROLES, normalizeRole } = require('../config/accessControl');
 
 const isActiveAccount = (status) => String(status || '').trim().toLowerCase() === 'active';
+const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const authController = {
 	// Connexion
@@ -24,7 +26,7 @@ const authController = {
 			if (!user) {
 				return res.status(401).json({
 					success: false,
-					message: 'Identifiants incorrects'
+					message: 'Utilisateur introuvable'
 				});
 			}
 
@@ -42,7 +44,7 @@ const authController = {
 			if (!isValidPassword) {
 				return res.status(401).json({
 					success: false,
-					message: 'Identifiants incorrects'
+					message: 'Mot de passe incorrect'
 				});
 			}
 
@@ -174,18 +176,34 @@ const authController = {
 	// Inscription
 	async register(req, res) {
 		try {
-			const { nom, pswd, email, photo = null } = req.body;
+			const { nom, pswd, email } = req.body;
+			const normalizedNom = String(nom || '').trim();
+			const normalizedEmail = String(email || '').trim().toLowerCase();
 
 			// Validation
-			if (!nom || !pswd || !email) {
+			if (!normalizedNom || !pswd || !normalizedEmail || !req.file) {
 				return res.status(400).json({
 					success: false,
-					message: 'Tous les champs sont requis'
+					message: 'Le nom, le mot de passe, l’email et la photo sont requis'
+				});
+			}
+
+			if (!PASSWORD_PATTERN.test(pswd)) {
+				return res.status(400).json({
+					success: false,
+					message: 'Le mot de passe doit contenir au moins 6 caractères, une majuscule, un nombre et un symbole'
+				});
+			}
+
+			if (!EMAIL_PATTERN.test(normalizedEmail)) {
+				return res.status(400).json({
+					success: false,
+					message: 'Adresse email invalide'
 				});
 			}
 
 			// Vérifier si l'utilisateur existe déjà
-			const usernameExists = await UserModel.usernameExists(nom);
+			const usernameExists = await UserModel.usernameExists(normalizedNom);
 			if (usernameExists) {
 				return res.status(409).json({
 					success: false,
@@ -193,7 +211,7 @@ const authController = {
 				});
 			}
 
-			const emailExists = await UserModel.emailExists(email);
+			const emailExists = await UserModel.emailExists(normalizedEmail);
 			if (emailExists) {
 				return res.status(409).json({
 					success: false,
@@ -207,17 +225,19 @@ const authController = {
 			// Définir les valeurs par défaut
 			// Une inscription publique reçoit toujours le rôle le moins privilégié.
 			const roles = ROLES.INVITER;
-			const user_role_id = Number(process.env.DEFAULT_REGISTER_ROLE_ID || 1);
+			const user_role_id = 2;
 			const login_session_key = null;
 			const email_status = 'pending';
 			const password_reset_key = null;
 			const account_status = 'pending';
+			const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
+			const photo = `${uploadPublicUrl}/${req.file.filename}`;
 
 			// Créer l'utilisateur
 			const result = await UserModel.addUser(
-				nom,
+				normalizedNom,
 				hashedPassword,
-				email,
+				normalizedEmail,
 				photo,
 				roles,
 				login_session_key,

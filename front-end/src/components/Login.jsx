@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   EyeInvisibleOutlined,
   EyeOutlined,
@@ -15,7 +15,17 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  const [registrationMessage] = useState(
+    () => location.state?.registrationMessage || ''
+  );
+
+  useEffect(() => {
+    if (location.state?.registrationMessage) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -120,6 +130,12 @@ function Login() {
               {error && (
                 <p className="login-error" role="alert" aria-live="polite">
                   {error}
+                </p>
+              )}
+
+              {registrationMessage && !error && (
+                <p className="login-registration-message" role="status" aria-live="polite">
+                  {registrationMessage}
                 </p>
               )}
 
