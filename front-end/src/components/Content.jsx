@@ -19,6 +19,7 @@ import ClassementLivre from './ClassementLivre';
 import AjoutUtilisateur from '../forms/AjoutUtilisateur';
 import ProtectedRoute from './ProtectedRoute';
 import Unauthorized from './Unauthorized';
+import EntityRecordPage from './EntityRecordPage';
 import { ALL_ROLES, CATALOGUE_ROLES, ROLES, STAFF_ROLES } from '../config/accessControl';
 
 const withRoles = (element, roles) => (
@@ -34,14 +35,22 @@ function Content() {
         
         {/* Adherent */}
         <Route path="/Adherent/Adherent" element={withRoles(<Adherent />, STAFF_ROLES)} />
+        <Route path="/Adherent/Adherent/view/:id" element={withRoles(<EntityRecordPage entity="adherent" mode="view" />, STAFF_ROLES)} />
+        <Route path="/Adherent/Adherent/edit/:id" element={withRoles(<EntityRecordPage entity="adherent" mode="edit" />, STAFF_ROLES)} />
         <Route path="/Adherent/Personne" element={withRoles(<Personne />, STAFF_ROLES)} />
+        <Route path="/Adherent/Personne/view/:id" element={withRoles(<EntityRecordPage entity="personne" mode="view" />, STAFF_ROLES)} />
+        <Route path="/Adherent/Personne/edit/:id" element={withRoles(<EntityRecordPage entity="personne" mode="edit" />, STAFF_ROLES)} />
         <Route path="/Adherent/Personne/ajoutPersonne" element={withRoles(<AjoutPersonne />, STAFF_ROLES)} />
         <Route path="/Adherent/Adherent/ajoutAdherent" element={withRoles(<AjoutAdherent />, STAFF_ROLES)} />
         
         {/* Gestion Bibliotheque */}
         <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu" element={withRoles(<EmpruntNonRendu />, STAFF_ROLES)} />
+        <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/view/:id" element={withRoles(<EntityRecordPage entity="emprunt" mode="view" />, STAFF_ROLES)} />
+        <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/edit/:id" element={withRoles(<EntityRecordPage entity="emprunt" mode="edit" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EmpruntLivre/Rendu" element={withRoles(<EmpruntRendu />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EtatDesLivres" element={withRoles(<EtatDesLivres />, STAFF_ROLES)} />
+        <Route path="/GestionBibliotheque/EtatDesLivres/view/:id" element={withRoles(<EntityRecordPage entity="livre" mode="view" />, STAFF_ROLES)} />
+        <Route path="/GestionBibliotheque/EtatDesLivres/edit/:id" element={withRoles(<EntityRecordPage entity="livre" mode="edit" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EtatDesLivres/ajoutLivre" element={withRoles(<AjoutLivre />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/ajoutEmprunt" element={withRoles(<AjoutEmprunt />, STAFF_ROLES)} />
         
@@ -56,6 +65,8 @@ function Content() {
         <Route path="/Parametre/Dewey" element={withRoles(<Dewey />, STAFF_ROLES)} />
         <Route path="/Parametre/Administrateur/HistoriqueSysteme" element={withRoles(<HistoriqueSysteme />, [ROLES.ADMIN])} />
         <Route path="/Parametre/Administrateur/User" element={withRoles(<User />, STAFF_ROLES)} />
+        <Route path="/Parametre/Administrateur/User/view/:id" element={withRoles(<EntityRecordPage entity="user" mode="view" />, STAFF_ROLES)} />
+        <Route path="/Parametre/Administrateur/User/edit/:id" element={withRoles(<EntityRecordPage entity="user" mode="edit" />, [ROLES.ADMIN])} />
         <Route path="/Parametre/Administrateur/User/ajoutUtilisateur" element={withRoles(<AjoutUtilisateur />, [ROLES.ADMIN])} />
         <Route path="/unauthorized" element={<Unauthorized />} />
         

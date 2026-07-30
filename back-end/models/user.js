@@ -46,6 +46,23 @@ class UserModel {
 		});
 	}
 
+	// UPDATE - Mettre à jour les informations administratives sans toucher au mot de passe
+	static async updateUserDetails(id, nom, email, photo, roles, accountStatus, userRoleId) {
+		return new Promise((resolve, reject) => {
+			db.query(
+				'UPDATE user SET nom = ?, email = ?, photo = ?, roles = ?, account_status = ?, user_role_id = ? WHERE id = ?',
+				[nom, email, photo, roles, accountStatus, userRoleId, id],
+				(error, result) => {
+					if (error) {
+						reject(error);
+					} else {
+						resolve(result);
+					}
+				}
+			);
+		});
+	}
+
 	// DELETE - Supprimer un utilisateur
 	static async deleteUser(id) {
 		return new Promise((resolve, reject) => {

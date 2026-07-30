@@ -161,8 +161,8 @@ function TableAdherent() {
             key="action"
             render={(_, record) => (
               <Space size="middle">
-                <a className='iconAction'><EyeOutlined /></a>
-                <a className='iconAction'><EditOutlined /></a>
+                <a className='iconAction' title="Voir" onClick={() => navigate(`/Adherent/Adherent/view/${record.id_adh}`)}><EyeOutlined /></a>
+                <a className='iconAction' title="Modifier" onClick={() => navigate(`/Adherent/Adherent/edit/${record.id_adh}`)}><EditOutlined /></a>
                 {isAdmin && <a className='iconAction' onClick={() => showDeleteConfirm([record.id_adh])}>
                   <DeleteOutlined />
                 </a>}

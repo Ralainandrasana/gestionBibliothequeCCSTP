@@ -30,13 +30,23 @@ function SideMenu() {
     '/Parametre/Administrateur/User/ajoutUtilisateur': ['/Paramètre', '/Parametre/Administrateur'],
   };
 
+  const getParentKeys = (path) => {
+    if (parentKeys[path]) return parentKeys[path];
+
+    const matchingPath = Object.keys(parentKeys)
+      .filter((key) => path.startsWith(`${key}/`))
+      .sort((first, second) => second.length - first.length)[0];
+
+    return matchingPath ? parentKeys[matchingPath] : [];
+  };
+
   // ✅ Mettre à jour quand l'URL change
   useEffect(() => {
     const path = location.pathname;
     setSelectedKey(path);
     
     // Ouvrir les parents correspondants
-    const parents = parentKeys[path] || [];
+    const parents = getParentKeys(path);
     setOpenKeys(parents);
   }, [location.pathname]);
 
@@ -49,7 +59,7 @@ function SideMenu() {
   const handleMenuClick = ({ key }) => {
     setSelectedKey(key);
     // Garder les sous-menus ouverts
-    const parents = parentKeys[key] || [];
+    const parents = getParentKeys(key);
     setOpenKeys(prevKeys => [...new Set([...prevKeys, ...parents])]);
     navigate(key);
   };

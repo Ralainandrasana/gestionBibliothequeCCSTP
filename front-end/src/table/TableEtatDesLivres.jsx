@@ -124,8 +124,8 @@ useEffect(() => {
             key="action"
             render={(_, record) => (
               <Space size="middle">
-                <a className='iconAction'><EyeOutlined /></a>
-                <a className='iconAction'><EditOutlined /></a>
+                <a className='iconAction' title="Voir" onClick={() => navigate(`/GestionBibliotheque/EtatDesLivres/view/${record.id_livre}`)}><EyeOutlined /></a>
+                <a className='iconAction' title="Modifier" onClick={() => navigate(`/GestionBibliotheque/EtatDesLivres/edit/${record.id_livre}`)}><EditOutlined /></a>
                 {isAdmin && <a className='iconAction'>
                   <DeleteOutlined />
                 </a>}

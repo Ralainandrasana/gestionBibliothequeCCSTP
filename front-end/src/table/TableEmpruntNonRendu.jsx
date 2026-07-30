@@ -320,8 +320,8 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
             width={100}
             render={(_, record) => (
               <Space size="middle">
-                <a className="iconAction"><EyeOutlined /></a>
-                <a className="iconAction"><EditOutlined /></a>
+                <a className="iconAction" title="Voir" onClick={() => navigate(`/GestionBibliotheque/EmpruntLivre/nonRendu/view/${record.id}`)}><EyeOutlined /></a>
+                <a className="iconAction" title="Modifier" onClick={() => navigate(`/GestionBibliotheque/EmpruntLivre/nonRendu/edit/${record.id}`)}><EditOutlined /></a>
                 {isAdmin && <a className="iconAction" onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>}
               </Space>
             )}

@@ -108,35 +108,54 @@ class UserController {
 
     // METTRE À JOUR
     static async updateAnUser(req, res) {
-        const { 
-            id, 
-            nom, 
-            pswd, 
-            email, 
-            photo, 
-            roles, 
-            login_session_key, 
-            email_status, 
-            password_reset_key, 
-            account_status, 
-            user_role_id 
-        } = req.body;
+        const { id, nom, email, photo, roles, account_status, user_role_id } = req.body;
         
         try {
+            const currentUser = await userModel.getUserById(id);
+            if (!currentUser) {
+                return res.status(404).json({ message: "Utilisateur introuvable." });
+            }
+
             const normalizedRole = validateRole(roles);
             if (!normalizedRole) {
                 return res.status(400).json({ message: "Rôle utilisateur invalide." });
             }
 
-            // Hachage du mot de passe si fourni
-            let hashedPassword = pswd;
-            if (pswd) {
-                hashedPassword = await bcrypt.hash(pswd, 10);
+            const normalizedStatus = String(account_status || '').trim().toLowerCase();
+            if (!ACCOUNT_STATUSES.includes(normalizedStatus)) {
+                return res.status(400).json({ message: "Statut du compte invalide." });
             }
 
-            // Mise à jour de l'utilisateur
-            const userUpdated = await userModel.updateUser(id, nom, hashedPassword, email, photo, normalizedRole, login_session_key, email_status, password_reset_key, account_status, user_role_id);
-            if (userUpdated) res.status(200).send('Utilisateur mis à jour avec succès.');
+            const normalizedUserRoleId = Number(user_role_id);
+            const expectedUserRoleId = normalizedRole === ROLES.ADMIN ? 1 : 2;
+            if (normalizedUserRoleId !== expectedUserRoleId) {
+                return res.status(400).json({ message: `Le User Role Id attendu est ${expectedUserRoleId}.` });
+            }
+
+            const normalizedNom = String(nom || '').trim();
+            const normalizedEmail = String(email || '').trim().toLowerCase();
+            if (!normalizedNom || !EMAIL_PATTERN.test(normalizedEmail)) {
+                return res.status(400).json({ message: "Nom ou adresse email invalide." });
+            }
+
+            if (normalizedNom !== currentUser.nom && await userModel.usernameExists(normalizedNom)) {
+                return res.status(409).json({ message: "Ce nom d'utilisateur existe déjà." });
+            }
+
+            if (normalizedEmail !== currentUser.email && await userModel.emailExists(normalizedEmail)) {
+                return res.status(409).json({ message: "Cette adresse email existe déjà." });
+            }
+
+            const userUpdated = await userModel.updateUserDetails(
+                id,
+                normalizedNom,
+                normalizedEmail,
+                photo || currentUser.photo,
+                normalizedRole,
+                normalizedStatus,
+                normalizedUserRoleId
+            );
+            if (userUpdated.affectedRows) res.status(200).json({ message: 'Utilisateur mis à jour avec succès.' });
             else res.status(400).send('Erreur lors de la mise à jour de l’utilisateur.');
         } catch (error) {
             res.status(500).json({ message: "Erreur serveur.", error });

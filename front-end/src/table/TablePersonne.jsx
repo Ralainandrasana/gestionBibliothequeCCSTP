@@ -184,8 +184,8 @@ function TablePersonne() {
             key="action"
             render={(_, record) => (
               <Space size="middle">
-                <a className='iconAction'><EyeOutlined /></a>
-                <a className='iconAction'><EditOutlined /></a>
+                <a className='iconAction' title="Voir" onClick={() => navigate(`/Adherent/Personne/view/${record.id}`)}><EyeOutlined /></a>
+                <a className='iconAction' title="Modifier" onClick={() => navigate(`/Adherent/Personne/edit/${record.id}`)}><EditOutlined /></a>
                 {isAdmin && <a className='iconAction' onClick={() => handleDelete(record.id)}><DeleteOutlined /></a>}
               </Space>
             )}

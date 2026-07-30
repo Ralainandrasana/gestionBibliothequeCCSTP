@@ -762,3 +762,103 @@ body {
   align-items: center;
 }
 
+.record-page-loading,
+.record-page-empty {
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.record-page-empty {
+  flex-direction: column;
+  gap: 20px;
+}
+
+.record-detail-card,
+.record-edit-card {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 28px;
+  border: 1px solid #E4EAF5;
+  border-radius: 12px;
+  background: #FFFFFF;
+  box-shadow: 0 10px 28px rgba(6, 28, 107, 0.08);
+}
+
+.record-detail-card .ant-descriptions-item-label {
+  color: var(--blueColor) !important;
+  font-weight: 650;
+  background: rgba(35, 95, 217, 0.10) !important;
+}
+
+.record-detail-card .ant-descriptions-item-content {
+  color: var(--blueSombre) !important;
+  background: rgba(35, 95, 217, 0.025) !important;
+}
+
+.record-detail-card .ant-descriptions-view,
+.record-detail-card .ant-descriptions-row,
+.record-detail-card .ant-descriptions-item-label,
+.record-detail-card .ant-descriptions-item-content {
+  border-color: rgba(35, 95, 217, 0.16) !important;
+}
+
+.record-edit-card .ant-form-item-label > label {
+  color: #26334D;
+  font-weight: 650;
+}
+
+.record-edit-card .ant-input,
+.record-edit-card .ant-input-number,
+.record-edit-card .ant-picker,
+.record-edit-card .ant-select-selector {
+  border-color: #D8E0F0 !important;
+  border-radius: 8px !important;
+}
+
+.record-edit-card .ant-input-number {
+  width: 100%;
+}
+
+.record-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.record-actions .ant-btn {
+  min-width: 110px;
+  border-radius: 8px;
+  font-weight: 650;
+}
+
+.record-actions .ant-btn-primary {
+  background: #215CDE;
+}
+
+@media (max-width: 700px) {
+  .record-detail-card,
+  .record-edit-card {
+    padding: 18px;
+  }
+
+  .record-edit-card .ant-form-item-label,
+  .record-edit-card .ant-form-item-control {
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .record-actions {
+    flex-direction: column-reverse;
+  }
+
+  .record-actions .ant-btn {
+    width: 100%;
+  }
+}
+
