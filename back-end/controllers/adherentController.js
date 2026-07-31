@@ -13,6 +13,11 @@ class AdherentController {
     // CREATE
     static async addNewAdherent(req, res) {
         try {
+            const existingAdherent = await adherentModel.findByPersonId(req.body.id_pers);
+            if (existingAdherent) {
+                return res.status(409).json({ message: 'Cette personne est déjà rattachée à un adhérent.' });
+            }
+
             await adherentModel.addAdherent(req.body);
             res.send('Adherent added successfully');
         } catch (error) {
@@ -22,6 +27,14 @@ class AdherentController {
     // UPDATE
     static async updateAdherent(req, res) {
         try {
+            const existingAdherent = await adherentModel.findByPersonId(
+                req.body.id_pers,
+                req.body.id_adh
+            );
+            if (existingAdherent) {
+                return res.status(409).json({ message: 'Cette personne est déjà rattachée à un autre adhérent.' });
+            }
+
             await adherentModel.updateAdherent(req.body.id_adh, req.body);
             res.send('Adherent updated successfully');
         } catch (error) {

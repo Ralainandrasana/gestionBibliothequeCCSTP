@@ -50,7 +50,12 @@ class PersonneController {
     // UPDATE
     static async updatePersonne(req, res) {
         try {
-            await personneModel.updatePersonne(req.body.id, req.body);
+            const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
+            const photo = req.file
+                ? `${uploadPublicUrl}/${req.file.filename}`
+                : req.body.photo;
+
+            await personneModel.updatePersonne(req.body.id, { ...req.body, photo });
             res.send('Personne updated successfully');
         } catch (error) {
             res.status(500).send('Error updating Personne');

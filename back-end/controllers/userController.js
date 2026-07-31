@@ -108,7 +108,7 @@ class UserController {
 
     // METTRE À JOUR
     static async updateAnUser(req, res) {
-        const { id, nom, email, photo, roles, account_status, user_role_id } = req.body;
+        const { id, nom, email, roles, account_status, user_role_id } = req.body;
         
         try {
             const currentUser = await userModel.getUserById(id);
@@ -146,11 +146,16 @@ class UserController {
                 return res.status(409).json({ message: "Cette adresse email existe déjà." });
             }
 
+            const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
+            const photo = req.file
+                ? `${uploadPublicUrl}/${req.file.filename}`
+                : (req.body.photo || currentUser.photo);
+
             const userUpdated = await userModel.updateUserDetails(
                 id,
                 normalizedNom,
                 normalizedEmail,
-                photo || currentUser.photo,
+                photo,
                 normalizedRole,
                 normalizedStatus,
                 normalizedUserRoleId

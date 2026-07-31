@@ -16,7 +16,7 @@ router.use(authMiddleware);
 //CRUD table User
 router.get('/users', roleMiddleware(STAFF_ROLES), userController.getAllUser) //Read
 router.post('/register', roleMiddleware([ROLES.ADMIN]), upload.single('photo'), userController.addNewUser) //Create
-router.put('/users', roleMiddleware([ROLES.ADMIN]), userController.updateAnUser) //Update
+router.put('/users', roleMiddleware([ROLES.ADMIN]), upload.single('photo'), userController.updateAnUser) //Update
 router.delete('/users/:id', roleMiddleware([ROLES.ADMIN]), userController.deleteAnUser) //Delete
 
 // CRUD table Dewey
@@ -58,7 +58,7 @@ router.delete('/oeuvres', roleMiddleware([ROLES.ADMIN]), oeuvreController.delete
 // Personne routes
 router.get('/personnes', roleMiddleware(STAFF_ROLES), personneController.getAllPersonnes);
 router.post('/personnes', roleMiddleware(STAFF_ROLES), upload.single('photo'), personneController.addNewPersonne);
-router.put('/personnes', roleMiddleware(STAFF_ROLES), personneController.updatePersonne);
+router.put('/personnes', roleMiddleware(STAFF_ROLES), upload.single('photo'), personneController.updatePersonne);
 router.delete('/personnes/:id', roleMiddleware([ROLES.ADMIN]), personneController.deletePersonne);
 
 module.exports = router

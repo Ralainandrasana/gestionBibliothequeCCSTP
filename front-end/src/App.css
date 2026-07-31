@@ -786,6 +786,37 @@ body {
   box-shadow: 0 10px 28px rgba(6, 28, 107, 0.08);
 }
 
+.record-edit-card {
+  height: auto;
+  min-height: 80vh;
+  margin-bottom: 32px;
+  padding-bottom: 46px;
+  overflow: hidden;
+}
+
+.record-edit-form,
+.record-edit-form .ant-form-item,
+.record-edit-form .ant-form-item-row {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.record-edit-form .ant-form-item-control {
+  min-width: 0;
+}
+
+.record-edit-form .ant-form-item-control-input,
+.record-edit-form .ant-form-item-control-input-content,
+.record-edit-form .ant-upload-wrapper,
+.record-edit-form .ant-upload-list {
+  max-width: 100%;
+}
+
+.record-edit-form .ant-upload-list-item-name {
+  color: var(--blueSombre);
+}
+
 .record-detail-card .ant-descriptions-item-label {
   color: var(--blueColor) !important;
   font-weight: 650;
@@ -839,6 +870,10 @@ body {
   background: #215CDE;
 }
 
+.record-edit-actions {
+  padding-top: 8px;
+}
+
 @media (max-width: 700px) {
   .record-detail-card,
   .record-edit-card {
@@ -849,6 +884,10 @@ body {
   .record-edit-card .ant-form-item-control {
     max-width: 100%;
     flex: 0 0 100%;
+  }
+
+  .record-edit-card .ant-form-item-row {
+    flex-wrap: wrap;
   }
 }
 

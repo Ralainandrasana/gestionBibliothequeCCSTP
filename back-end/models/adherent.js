@@ -39,6 +39,23 @@ class AdherentModel {
             });
         });
     }
+
+    static async findByPersonId(id_pers, excludedAdherentId = null) {
+        return new Promise((resolve, reject) => {
+            const query = excludedAdherentId
+                ? 'SELECT id_adh FROM adherent WHERE id_pers = ? AND id_adh <> ? LIMIT 1'
+                : 'SELECT id_adh FROM adherent WHERE id_pers = ? LIMIT 1';
+            const parameters = excludedAdherentId ? [id_pers, excludedAdherentId] : [id_pers];
+
+            db.query(query, parameters, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(result.length > 0 ? result[0] : null);
+                }
+            });
+        });
+    }
 //search adherant
     static async searchAdherant(id_adh) {//hello
         return new Promise((resolve, reject) => {

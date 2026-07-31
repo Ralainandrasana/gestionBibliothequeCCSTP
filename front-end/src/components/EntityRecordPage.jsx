@@ -14,6 +14,7 @@ import {
   Select,
   Spin,
   Switch,
+  Upload,
 } from 'antd';
 import {
   BookOutlined,
@@ -22,6 +23,7 @@ import {
   HomeOutlined,
   RightOutlined,
   SaveOutlined,
+  UploadOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
@@ -44,6 +46,7 @@ function EntityRecordPage({ entity, mode }) {
   const [record, setRecord] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [dynamicOptions, setDynamicOptions] = useState({});
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const canEdit = hasAnyRole(user, config.editRoles);
 
@@ -67,6 +70,34 @@ function EntityRecordPage({ entity, mode }) {
         }
 
         setRecord(foundRecord);
+
+        const remoteFields = editableFields.filter((field) => field.type === 'remoteSelect');
+        const remoteResponses = await Promise.all(
+          remoteFields.map((field) => axios.get(field.sourceEndpoint))
+        );
+        const nextDynamicOptions = {};
+
+        remoteFields.forEach((field, index) => {
+          let sourceRecords = remoteResponses[index].data;
+
+          if (field.excludeAttachedPerson) {
+            const attachedToAnotherAdherent = new Set(
+              response.data
+                .filter((adherent) => String(adherent[config.idField]) !== String(id))
+                .map((adherent) => String(adherent.id_pers))
+            );
+            sourceRecords = sourceRecords.filter(
+              (personne) => !attachedToAnotherAdherent.has(String(personne[field.sourceValue]))
+            );
+          }
+
+          nextDynamicOptions[field.name] = sourceRecords.map((sourceRecord) => ({
+            value: String(sourceRecord[field.sourceValue]),
+            label: field.sourceLabel(sourceRecord),
+          }));
+        });
+        setDynamicOptions(nextDynamicOptions);
+
         const formValues = {};
         editableFields.forEach((field) => {
           const value = foundRecord[field.name];
@@ -74,6 +105,12 @@ function EntityRecordPage({ entity, mode }) {
             formValues[field.name] = validDate(value) ? dayjs(value) : null;
           } else if (field.type === 'boolean') {
             formValues[field.name] = Boolean(Number(value) || value === true);
+          } else if (field.upload) {
+            formValues[field.name] = value
+              ? [{ uid: `existing-${field.name}`, name: 'Photo actuelle', status: 'done', url: value }]
+              : [];
+          } else if (field.type === 'remoteSelect') {
+            formValues[field.name] = value === null || value === undefined ? undefined : String(value);
           } else {
             formValues[field.name] = value;
           }
@@ -123,6 +160,29 @@ function EntityRecordPage({ entity, mode }) {
     if (field.type === 'date') return <DatePicker style={{ width: '100%' }} />;
     if (field.type === 'number') return <InputNumber style={{ width: '100%' }} />;
     if (field.type === 'boolean') return <Switch checkedChildren="Oui" unCheckedChildren="Non" />;
+    if (field.upload) {
+      return (
+        <Upload
+          listType="picture"
+          maxCount={1}
+          accept="image/*"
+          beforeUpload={() => false}
+        >
+          <Button type="primary" icon={<UploadOutlined />}>Choisir une image</Button>
+        </Upload>
+      );
+    }
+    if (field.type === 'remoteSelect') {
+      return (
+        <Select
+          showSearch
+          optionFilterProp="label"
+          options={dynamicOptions[field.name] || []}
+          placeholder="Tapez pour rechercher..."
+          notFoundContent="Aucun résultat"
+        />
+      );
+    }
     if (field.type === 'select') {
       return (
         <Select
@@ -157,7 +217,31 @@ function EntityRecordPage({ entity, mode }) {
         ? config.preparePayload(record, basePayload)
         : basePayload;
 
-      await axios.put(config.updateEndpoint, payload);
+      let requestPayload = payload;
+      if (config.multipart) {
+        requestPayload = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          const uploadField = editableFields.find(
+            (field) => field.name === key && field.upload
+          );
+
+          if (uploadField) {
+            const uploadedFile = values[key]?.[0]?.originFileObj;
+            if (uploadedFile) {
+              requestPayload.append(key, uploadedFile);
+            } else if (record[key]) {
+              requestPayload.append(key, record[key]);
+            }
+            return;
+          }
+
+          if (value !== undefined && value !== null && !Array.isArray(value)) {
+            requestPayload.append(key, typeof value === 'boolean' ? Number(value) : value);
+          }
+        });
+      }
+
+      await axios.put(config.updateEndpoint, requestPayload);
       message.success(`${config.title} modifié avec succès.`);
       navigate(viewPath);
     } catch (error) {
@@ -211,8 +295,8 @@ function EntityRecordPage({ entity, mode }) {
         <div className="icon">
           <HomeOutlined style={{ fontSize: '12px', color: '#061C6B' }} />
         </div>
-        {config.breadcrumbs.map((breadcrumb) => (
-          <Fragment key={breadcrumb}>
+        {config.breadcrumbs.map((breadcrumb, index) => (
+          <Fragment key={`${breadcrumb}-${index}`}>
             <div className="icon">
               <RightOutlined style={{ fontSize: '10px', color: '#061C6B', margin: '0 4px' }} />
             </div>
@@ -261,8 +345,9 @@ function EntityRecordPage({ entity, mode }) {
         <div className="form record-edit-card">
           <Form
             form={form}
-            labelCol={{ span: 6 }}
-            wrapperCol={{ span: 14 }}
+            className="record-edit-form"
+            labelCol={{ flex: '190px' }}
+            wrapperCol={{ flex: '1 1 0' }}
             onFinish={handleSave}
             autoComplete="off"
           >
@@ -271,7 +356,8 @@ function EntityRecordPage({ entity, mode }) {
                 label={field.label}
                 name={field.name}
                 key={field.name}
-                valuePropName={field.type === 'boolean' ? 'checked' : 'value'}
+                valuePropName={field.type === 'boolean' ? 'checked' : field.upload ? 'fileList' : 'value'}
+                getValueFromEvent={field.upload ? (event) => event?.fileList : undefined}
                 rules={[
                   {
                     required: field.required !== false && field.type !== 'boolean',
@@ -283,14 +369,12 @@ function EntityRecordPage({ entity, mode }) {
               </Form.Item>
             ))}
 
-            <Form.Item wrapperCol={{ offset: 6, span: 14 }}>
-              <div className="record-actions">
-                <Button onClick={() => navigate(viewPath)}>Annuler</Button>
-                <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
-                  Enregistrer
-                </Button>
-              </div>
-            </Form.Item>
+            <div className="record-actions record-edit-actions">
+              <Button onClick={() => navigate(viewPath)}>Annuler</Button>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
+                Enregistrer
+              </Button>
+            </div>
           </Form>
         </div>
       )}
