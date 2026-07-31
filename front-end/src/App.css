@@ -245,7 +245,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background: var(--login-blue);
+  background: linear-gradient(120deg, var(--selectedMenu) 0%, var(--blueColor) 32%, var(--blueSombre) 100%);
 }
 
 .login-page,
@@ -290,7 +290,7 @@ body {
   justify-content: center;
   padding: 48px;
   color: #fff;
-  background: rgba(33, 92, 222, 0.68);
+  background: rgba(33, 92, 222, 0.56);
 }
 
 .login-welcome {
@@ -304,14 +304,59 @@ body {
   font-weight: 750;
   line-height: 1.05;
   letter-spacing: -0.04em;
+  opacity: 0;
+  animation: login-welcome-reveal 0.9s ease-out forwards;
 }
 
 .login-welcome p {
+  min-height: 3.5em;
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: clamp(1.05rem, 2vw, 1.35rem);
   font-style: italic;
   line-height: 1.75;
+  white-space: pre-line;
+}
+
+.login-typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: -0.12em;
+  background: currentColor;
+  animation: login-cursor-blink 0.72s steps(1) infinite;
+}
+
+@keyframes login-welcome-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes login-cursor-blink {
+  0%, 48% {
+    opacity: 1;
+  }
+  49%, 100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-welcome h1 {
+    opacity: 1;
+    animation: none;
+  }
+
+  .login-typing-cursor {
+    animation: none;
+  }
 }
 
 .login-panel {

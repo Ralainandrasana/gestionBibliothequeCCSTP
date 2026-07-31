@@ -8,12 +8,16 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 
+const LOGIN_QUOTE = '« Lire, c’est parcourir le monde\nsans jamais quitter sa chaise. »';
+
 function Login() {
   const [nom, setNom] = useState('');
   const [pswd, setPswd] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [displayedQuote, setDisplayedQuote] = useState('');
+  const [isTypingQuote, setIsTypingQuote] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -26,6 +30,34 @@ function Login() {
       navigate(location.pathname, { replace: true, state: null });
     }
   }, [location.pathname, location.state, navigate]);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setDisplayedQuote(LOGIN_QUOTE);
+      return undefined;
+    }
+
+    let quoteIndex = 0;
+    let typingTimer;
+    const startTimer = window.setTimeout(() => {
+      setIsTypingQuote(true);
+      typingTimer = window.setInterval(() => {
+        quoteIndex += 1;
+        setDisplayedQuote(LOGIN_QUOTE.slice(0, quoteIndex));
+
+        if (quoteIndex >= LOGIN_QUOTE.length) {
+          window.clearInterval(typingTimer);
+          setIsTypingQuote(false);
+        }
+      }, 42);
+    }, 900);
+
+    return () => {
+      window.clearTimeout(startTimer);
+      window.clearInterval(typingTimer);
+    };
+  }, []);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -62,10 +94,9 @@ function Login() {
           <div className="login-visual-overlay">
             <div className="login-welcome">
               <h1>Bienvenue !</h1>
-              <p>
-                « Lire, c’est parcourir le monde
-                <br />
-                sans jamais quitter sa chaise. »
+              <p aria-label={LOGIN_QUOTE.replace('\n', ' ')}>
+                {displayedQuote}
+                {isTypingQuote && <span className="login-typing-cursor" aria-hidden="true" />}
               </p>
             </div>
           </div>
