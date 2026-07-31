@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
+import { useState } from 'react';
 import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Dropdown, Menu, Avatar } from 'antd';
 import { useAuth } from '../context/AuthContext';
@@ -6,6 +7,7 @@ import { normalizeRole, ROLES } from '../config/accessControl';
 
 function Header({ onLogout }) {
   const { user } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   // Menu de déconnexion
   const menu = (
@@ -80,13 +82,22 @@ function Header({ onLogout }) {
         <div className="photo">
           {getAvatar()}
         </div>
-        <Dropdown overlay={menu} trigger={['click']} className='logout'>
-          <div style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Dropdown
+          overlay={menu}
+          trigger={['click']}
+          open={isUserMenuOpen}
+          onOpenChange={setIsUserMenuOpen}
+          className="logout"
+        >
+          <div
+            style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+            aria-expanded={isUserMenuOpen}
+          >
             <div className="nomEtRole">
               <h5 style={{ margin: 0 }}>{getFullName()}</h5>
-              <h6 style={{ margin: 0, color: '#888', fontSize: '12px' }}>{getRoleDisplay()}</h6>
+              <p style={{ margin: 0, color: '#666', fontSize: '12px' }}>{getRoleDisplay()}</p>
             </div>
-            <div className="arrowDown">
+            <div className={`arrowDown${isUserMenuOpen ? ' is-open' : ''}`}>
               <DownOutlined />
             </div>
           </div>

@@ -762,6 +762,19 @@ body {
   align-items: center;
 }
 
+.arrowDown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(0deg);
+  transform-origin: center;
+  transition: transform 0.22s ease-in-out;
+}
+
+.arrowDown.is-open {
+  transform: rotate(180deg);
+}
+
 .record-page-loading,
 .record-page-empty {
   min-height: 420px;
