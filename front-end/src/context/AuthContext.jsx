@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
           setIsAuthenticated(true);
           setUser(response.data.user);
         }
-      } catch (error) {
+      } catch {
         console.log('Session inactive');
       } finally {
         setLoading(false);
@@ -61,6 +62,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUser = async () => {
+    const response = await api.get('/auth/check-session');
+    if (response.data.success) {
+      setIsAuthenticated(true);
+      setUser(response.data.user);
+      return response.data.user;
+    }
+    return null;
+  };
+
   return (
     <AuthContext.Provider value={{ 
       isAuthenticated, 
@@ -68,6 +79,7 @@ export const AuthProvider = ({ children }) => {
       loading, 
       login, 
       logout,
+      refreshUser,
       api
     }}>
       {children}

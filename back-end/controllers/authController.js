@@ -290,13 +290,26 @@ const authController = {
 	// Mettre à jour le profil
 	async updateProfile(req, res) {
 		try {
-			const { nom, email, photo } = req.body;
+			const { nom, email } = req.body;
 			const userId = req.session.userId;
+			const normalizedNom = String(nom || '').trim();
+			const normalizedEmail = String(email || '').trim().toLowerCase();
+
+			if (!normalizedNom || !EMAIL_PATTERN.test(normalizedEmail)) {
+				return res.status(400).json({
+					success: false,
+					message: 'Nom ou adresse email invalide'
+				});
+			}
 
 			// Vérifier si l'email est déjà utilisé par un autre utilisateur
 			const user = await UserModel.getUserById(userId);
-			if (email !== user.email) {
-				const emailExists = await UserModel.emailExists(email);
+			if (!user) {
+				return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
+			}
+
+			if (normalizedEmail !== user.email) {
+				const emailExists = await UserModel.emailExists(normalizedEmail);
 				if (emailExists) {
 					return res.status(409).json({
 						success: false,
@@ -306,8 +319,8 @@ const authController = {
 			}
 
 			// Vérifier si le nom est déjà utilisé par un autre utilisateur
-			if (nom !== user.nom) {
-				const usernameExists = await UserModel.usernameExists(nom);
+			if (normalizedNom !== user.nom) {
+				const usernameExists = await UserModel.usernameExists(normalizedNom);
 				if (usernameExists) {
 					return res.status(409).json({
 						success: false,
@@ -316,16 +329,32 @@ const authController = {
 				}
 			}
 
-			const updated = await UserModel.updateProfile(userId, nom, email, photo);
+			const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
+			const photo = req.file
+				? `${uploadPublicUrl}/${req.file.filename}`
+				: (req.body.photo || user.photo);
+
+			const updated = await UserModel.updateProfile(
+				userId,
+				normalizedNom,
+				normalizedEmail,
+				photo
+			);
 			
 			if (updated.affectedRows > 0) {
 				// Mettre à jour la session
-				req.session.nom = nom;
-				req.session.email = email;
+				req.session.nom = normalizedNom;
+				req.session.email = normalizedEmail;
 				
 				res.json({
 					success: true,
-					message: 'Profil mis à jour'
+					message: 'Profil mis à jour',
+					user: {
+						...user,
+						nom: normalizedNom,
+						email: normalizedEmail,
+						photo
+					}
 				});
 			} else {
 				res.status(400).json({
@@ -347,6 +376,20 @@ const authController = {
 		try {
 			const { currentPassword, newPassword } = req.body;
 			const userId = req.session.userId;
+
+			if (!currentPassword || !newPassword) {
+				return res.status(400).json({
+					success: false,
+					message: 'Mot de passe actuel et nouveau mot de passe requis'
+				});
+			}
+
+			if (!PASSWORD_PATTERN.test(newPassword)) {
+				return res.status(400).json({
+					success: false,
+					message: 'Le nouveau mot de passe doit contenir au moins 6 caractères, une majuscule, un nombre et un symbole'
+				});
+			}
 
 			// Récupérer l'utilisateur avec son mot de passe
 			const user = await UserModel.checkUserIfExist(req.session.nom);

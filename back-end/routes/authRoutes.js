@@ -15,7 +15,7 @@ router.post('/reset-password', authController.resetPassword);
 // Routes protégées (nécessitent une authentification)
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/profile', authMiddleware, authController.getProfile);
-router.put('/profile', authMiddleware, authController.updateProfile);
+router.put('/profile', authMiddleware, upload.single('photo'), authController.updateProfile);
 router.put('/change-password', authMiddleware, authController.changePassword);
 
 // Routes admin (exemple)

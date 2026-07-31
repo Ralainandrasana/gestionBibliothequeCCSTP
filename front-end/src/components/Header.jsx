@@ -2,17 +2,26 @@
 import { useState } from 'react';
 import { DownOutlined, LogoutOutlined, UserOutlined } from '@ant-design/icons';
 import { Dropdown, Menu, Avatar } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { normalizeRole, ROLES } from '../config/accessControl';
 
 function Header({ onLogout }) {
   const { user } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   // Menu de déconnexion
   const menu = (
     <Menu>
-      <Menu.Item key="profile" icon={<UserOutlined />}>
+      <Menu.Item
+        key="profile"
+        icon={<UserOutlined />}
+        onClick={() => {
+          setIsUserMenuOpen(false);
+          navigate('/profil');
+        }}
+      >
         Profil
       </Menu.Item>
       <Menu.Item key="logout" onClick={onLogout} icon={<LogoutOutlined />}>

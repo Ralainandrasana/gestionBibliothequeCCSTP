@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import React from 'react';
 import Personne from './Personne';
 import Dashboard from './Dashboard';
 import Adherent from './Adherent';
@@ -20,6 +19,7 @@ import AjoutUtilisateur from '../forms/AjoutUtilisateur';
 import ProtectedRoute from './ProtectedRoute';
 import Unauthorized from './Unauthorized';
 import EntityRecordPage from './EntityRecordPage';
+import Profile from './Profile';
 import { ALL_ROLES, CATALOGUE_ROLES, ROLES, STAFF_ROLES } from '../config/accessControl';
 
 const withRoles = (element, roles) => (
@@ -32,6 +32,7 @@ function Content() {
       <Routes>
         {/* Dashboard */}
         <Route path="/dashboard" element={withRoles(<Dashboard />, ALL_ROLES)} />
+        <Route path="/profil" element={withRoles(<Profile />, ALL_ROLES)} />
         
         {/* Adherent */}
         <Route path="/Adherent/Adherent" element={withRoles(<Adherent />, STAFF_ROLES)} />
