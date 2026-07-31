@@ -7,6 +7,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
+import PageLoader from './PageLoader';
 
 const LOGIN_QUOTE = '« Lire, c’est parcourir le monde\nsans jamais quitter sa chaise. »';
 
@@ -20,7 +21,7 @@ function Login() {
   const [isTypingQuote, setIsTypingQuote] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, loading: authLoading } = useAuth();
   const [registrationMessage] = useState(
     () => location.state?.registrationMessage || ''
   );
@@ -32,6 +33,12 @@ function Login() {
   }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
+    if (authLoading) {
+      setDisplayedQuote('');
+      setIsTypingQuote(false);
+      return undefined;
+    }
+
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
       setDisplayedQuote(LOGIN_QUOTE);
@@ -57,7 +64,7 @@ function Login() {
       window.clearTimeout(startTimer);
       window.clearInterval(typingTimer);
     };
-  }, []);
+  }, [authLoading]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -85,6 +92,10 @@ function Login() {
       setLoading(false);
     }
   };
+
+  if (authLoading) {
+    return <PageLoader message="Préparation de la page de connexion" />;
+  }
 
   return (
     <main className="login-page">

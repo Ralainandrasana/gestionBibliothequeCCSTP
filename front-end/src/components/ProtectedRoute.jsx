@@ -1,13 +1,14 @@
-import React from 'react';
+/* eslint-disable react/prop-types */
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole } from '../config/accessControl';
+import PageLoader from './PageLoader';
 
 const ProtectedRoute = ({ children, roles = [] }) => {
   const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return <PageLoader message="Ouverture de votre bibliothèque" />;
   }
 
   if (!isAuthenticated) {

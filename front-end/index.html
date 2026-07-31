@@ -1,13 +1,168 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/image/logoSaintPaul.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ccsp</title>
+    <meta name="theme-color" content="#235FD9" />
+    <title>CCStP — Gestion de bibliothèque</title>
+    <style>
+      html,
+      body,
+      #root {
+        width: 100%;
+        min-width: 320px;
+        min-height: 100%;
+        margin: 0;
+      }
+
+      html,
+      body {
+        background: #061C6B;
+      }
+
+      .boot-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #396CE1 0%, #235FD9 42%, #061C6B 100%);
+        color: #FFFFFF;
+        font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      .boot-loader-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .boot-loader-emblem {
+        position: relative;
+        width: 142px;
+        height: 142px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 22px;
+      }
+
+      .boot-loader-orbit {
+        position: absolute;
+        inset: 3px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        border-top-color: #FFFFFF;
+        border-radius: 50%;
+        animation: boot-loader-spin 1.45s linear infinite;
+      }
+
+      .boot-loader-orbit::after {
+        content: "";
+        position: absolute;
+        top: 7px;
+        right: 17px;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #FFFFFF;
+        box-shadow: 0 0 14px #FFFFFF;
+      }
+
+      .boot-loader-logo {
+        position: relative;
+        z-index: 1;
+        width: 82px;
+        height: 82px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 24px;
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 0 12px 30px rgba(6, 28, 107, 0.25);
+        animation: boot-loader-breathe 1.8s ease-in-out infinite;
+      }
+
+      .boot-loader-logo img {
+        width: 62px;
+        height: 62px;
+        object-fit: contain;
+      }
+
+      .boot-loader strong {
+        margin-bottom: 6px;
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .boot-loader p {
+        margin: 0;
+        font-size: 0.93rem;
+        font-weight: 550;
+        opacity: 0.76;
+      }
+
+      .boot-loader-dots {
+        display: flex;
+        gap: 7px;
+        margin-top: 17px;
+      }
+
+      .boot-loader-dots span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: boot-loader-dot 1.15s ease-in-out infinite;
+      }
+
+      .boot-loader-dots span:nth-child(2) { animation-delay: 0.16s; }
+      .boot-loader-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+      @keyframes boot-loader-spin {
+        to { transform: rotate(360deg); }
+      }
+
+      @keyframes boot-loader-breathe {
+        0%, 100% { transform: scale(0.96); }
+        50% { transform: scale(1.03); }
+      }
+
+      @keyframes boot-loader-dot {
+        0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+        30% { opacity: 1; transform: translateY(-5px); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .boot-loader-orbit,
+        .boot-loader-logo,
+        .boot-loader-dots span {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="boot-loader" role="status" aria-label="Démarrage de l’application">
+        <div class="boot-loader-content">
+          <div class="boot-loader-emblem" aria-hidden="true">
+            <span class="boot-loader-orbit"></span>
+            <div class="boot-loader-logo">
+              <img src="/image/logoSaintPaul.png" alt="" />
+            </div>
+          </div>
+          <strong>CCStP</strong>
+          <p>Démarrage de votre bibliothèque</p>
+          <div class="boot-loader-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
