@@ -2,16 +2,31 @@ const db = require('../config/db');
 
 class AppLogsModel {
     // READ
-    static async getAppLogs() {
-        return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM app_logs ORDER BY log_id DESC', [], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
+    static async getAppLogs({ limit = 20, offset = 0, search = '' } = {}) {
+        const searchableColumns = `CONCAT_WS(' ',
+            log_id, Timestamp, Action, TableName, RecordID, SqlQuery, UserID,
+            ServerIP, RequestUrl, RequestData, RequestCompleted, RequestMsg
+        )`;
+        const whereClause = search ? ` WHERE ${searchableColumns} LIKE ?` : '';
+        const searchValues = search ? [`%${search}%`] : [];
+
+        const rows = await new Promise((resolve, reject) => {
+            db.query(
+                `SELECT * FROM app_logs${whereClause} ORDER BY log_id DESC LIMIT ? OFFSET ?`,
+                [...searchValues, limit, offset],
+                (error, result) => error ? reject(error) : resolve(result)
+            );
         });
+
+        const total = await new Promise((resolve, reject) => {
+            db.query(
+                `SELECT COUNT(*) AS total FROM app_logs${whereClause}`,
+                searchValues,
+                (error, result) => error ? reject(error) : resolve(Number(result[0]?.total || 0))
+            );
+        });
+
+        return { rows, total };
     }
 
     // CREATE
