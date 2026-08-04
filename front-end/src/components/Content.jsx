@@ -20,6 +20,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Unauthorized from './Unauthorized';
 import EntityRecordPage from './EntityRecordPage';
 import Profile from './Profile';
+import ComingSoon from './ComingSoon';
 import { ALL_ROLES, CATALOGUE_ROLES, ROLES, STAFF_ROLES } from '../config/accessControl';
 
 const withRoles = (element, roles) => (
@@ -49,11 +50,40 @@ function Content() {
         <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/view/:id" element={withRoles(<EntityRecordPage entity="emprunt" mode="view" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/edit/:id" element={withRoles(<EntityRecordPage entity="emprunt" mode="edit" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EmpruntLivre/Rendu" element={withRoles(<EmpruntRendu />, STAFF_ROLES)} />
+        <Route
+          path="/GestionBibliotheque/EmpruntPeriodique/nonRendu"
+          element={withRoles(
+            <ComingSoon
+              title="Emprunts périodiques non rendus"
+              breadcrumbs={['Gestion Bibliothèque', 'Emprunt périodique', 'Non rendu']}
+            />,
+            STAFF_ROLES
+          )}
+        />
+        <Route
+          path="/GestionBibliotheque/EmpruntPeriodique/Rendu"
+          element={withRoles(
+            <ComingSoon
+              title="Emprunts périodiques rendus"
+              breadcrumbs={['Gestion Bibliothèque', 'Emprunt périodique', 'Rendu']}
+            />,
+            STAFF_ROLES
+          )}
+        />
         <Route path="/GestionBibliotheque/EtatDesLivres" element={withRoles(<EtatDesLivres />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EtatDesLivres/view/:id" element={withRoles(<EntityRecordPage entity="livre" mode="view" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EtatDesLivres/edit/:id" element={withRoles(<EntityRecordPage entity="livre" mode="edit" />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EtatDesLivres/ajoutLivre" element={withRoles(<AjoutLivre />, STAFF_ROLES)} />
         <Route path="/GestionBibliotheque/EmpruntLivre/nonRendu/ajoutEmprunt" element={withRoles(<AjoutEmprunt />, STAFF_ROLES)} />
+
+        {/* Gestion Ludothèque */}
+        <Route
+          path="/Gestion Ludotheque"
+          element={withRoles(
+            <ComingSoon title="Gestion ludothèque" breadcrumbs={['Gestion ludothèque']} />,
+            STAFF_ROLES
+          )}
+        />
         
         {/* Catalogue */}
         <Route path="/Catalogue" element={withRoles(<Catalogue />, CATALOGUE_ROLES)} />
