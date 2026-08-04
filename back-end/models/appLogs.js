@@ -4,7 +4,7 @@ class AppLogsModel {
     // READ
     static async getAppLogs() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM app_logs', [], (error, result) => {
+            db.query('SELECT * FROM app_logs ORDER BY log_id DESC', [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

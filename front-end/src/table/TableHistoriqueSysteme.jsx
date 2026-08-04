@@ -1,4 +1,4 @@
-import { Table, Input, Space } from 'antd';
+import { Table, Input, Space, Tag } from 'antd';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import moment from 'moment';
@@ -41,18 +41,15 @@ function Catalogue() {
 
   // Filtrage des données selon la recherche
   useEffect(() => {
-    const filtered = data.filter(livre => {
-      const livreTitre = livre.titre?.toLowerCase() || '';
-      const livreCote = livre.cote?.toLowerCase() || '';
-      const livreISBN = livre.ISBN?.toUpperCase() || '';
-      const livreId = livre.id_livre?.toString() || ''; // Conversion de id_livre en string pour comparaison
-      const lowerCaseSearch = searchTerm.toLowerCase();
+    const lowerCaseSearch = searchTerm.trim().toLowerCase();
+    const searchableFields = [
+      'log_id', 'Timestamp', 'Action', 'TableName', 'RecordID', 'SqlQuery',
+      'UserID', 'ServerIP', 'RequestUrl', 'RequestData', 'RequestCompleted', 'RequestMsg'
+    ];
 
-      return (
-        livreTitre.includes(lowerCaseSearch) ||
-        livreId.includes(lowerCaseSearch) ||
-        livreCote.includes(lowerCaseSearch) ||
-        livreISBN.includes(lowerCaseSearch)
+    const filtered = data.filter(log => {
+      return searchableFields.some(field =>
+        String(log[field] ?? '').toLowerCase().includes(lowerCaseSearch)
       );
     });
     setFilteredData(filtered);
@@ -73,31 +70,42 @@ function Catalogue() {
       <div className="table">
         <Table 
           dataSource={filteredData} 
-          rowKey="id_livre" // Clé unique pour chaque ligne
-          scroll={{ y: height, x: 1500 }}
+          rowKey="log_id"
+          scroll={{ y: height, x: 2100 }}
           loading={loading}
           pagination={{
-            showTotal: (total) => `Total des livres : ${total}`,
+            showTotal: (total) => `Total des journaux : ${total}`,
           }}
         >
           {/* Colonne avec tri */}
           <Column 
             title="#id" 
             dataIndex="log_id" 
-            key="id_livre" 
+            key="log_id"
             width={70}
-            sorter={(a, b) => a.id_livre - b.id_livre} // Activer le tri
+            sorter={(a, b) => a.log_id - b.log_id}
           />
           
           
           <Column title="Timestamp" dataIndex="Timestamp" key="Timestamp" width={150} />
           <Column title="Action" dataIndex="Action" key="Action" />
           <Column title="TableName" dataIndex="TableName" key="TableName" />
+          <Column title="RecordID" dataIndex="RecordID" key="RecordID" />
           <Column title="SqlQuery" dataIndex="SqlQuery" key="SqlQuery" width={300}/>
           <Column title="UserID" dataIndex="UserID" key="UserID" />
           <Column title="ServerIP" dataIndex="ServerIP" key="ServerIP" />
-          <Column title="Requestdata" dataIndex="RequestData" key="Requestdata" width={500}/>
-          <Column title="RequestCompleted" dataIndex="RequestCompleted" key="RequestCompleted" />
+          <Column title="URL" dataIndex="RequestUrl" key="RequestUrl" width={250} />
+          <Column title="Données" dataIndex="RequestData" key="RequestData" width={350}/>
+          <Column
+            title="Résultat"
+            dataIndex="RequestCompleted"
+            key="RequestCompleted"
+            render={(completed) => {
+              const success = String(completed) === 'true';
+              return <Tag color={success ? 'success' : 'error'}>{success ? 'Réussi' : 'Échec'}</Tag>;
+            }}
+          />
+          <Column title="Message" dataIndex="RequestMsg" key="RequestMsg" width={280} />
         </Table>
       </div>
     </div>

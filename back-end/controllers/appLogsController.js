@@ -1,4 +1,4 @@
-const appLogsModel = require("../models/applogs");
+const appLogsModel = require("../models/appLogs");
 
 class AppLogsController {
     // READ

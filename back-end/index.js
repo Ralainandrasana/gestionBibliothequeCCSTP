@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
 const crudRout = require('./routes/crudRouter');
 const otherRout = require('./routes/otherRouter');
+const auditMiddleware = require('./middleware/audit');
 
 dotenv.config();
 
@@ -35,6 +36,9 @@ app.use(session({
   },
   name: 'bibliotheque.sid'
 }));
+
+// Journaliser automatiquement les actions métier après l'initialisation de la session.
+app.use(auditMiddleware);
 
 // Routes
 app.use('/api/auth', authRoutes);
