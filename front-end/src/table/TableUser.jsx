@@ -13,6 +13,22 @@ moment.locale('fr');
 const { Column } = Table;
 const { confirm } = Modal;
 
+const ROLE_OPTIONS = [
+  { value: ROLES.ADMIN, label: 'Admin' },
+  { value: ROLES.USER, label: 'Utilisateur' },
+  { value: ROLES.INVITER, label: 'Invité' },
+];
+
+const STATUS_OPTIONS = [
+  { value: 'active', label: 'Actif' },
+  { value: 'pending', label: 'En attente' },
+  { value: 'blocked', label: 'Bloqué' },
+];
+
+const getOptionLabel = (options, value) => (
+  options.find(option => option.value === value)?.label || value
+);
+
 function TablePersonne() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
@@ -193,38 +209,40 @@ function TablePersonne() {
           <Column title="Nom" dataIndex="nom" key="nom" />
           <Column title="Email" dataIndex="email" key="Email" width={300}/>
           <Column
-            title="Roles"
+            title="Rôles"
             dataIndex="roles"
             key="Roles"
-            render={(roles, record) => isAdmin ? (
-              <Select
-                value={normalizeRole(roles)}
-                style={{ width: 130 }}
-                onChange={(value) => handleRoleChange(record.id, value)}
-                options={[
-                  { value: ROLES.ADMIN, label: 'Administrateur' },
-                  { value: ROLES.USER, label: 'Utilisateur' },
-                  { value: ROLES.INVITER, label: 'Invité' },
-                ]}
-              />
-            ) : roles}
+            render={(roles, record) => {
+              const normalizedRole = normalizeRole(roles);
+              return isAdmin ? (
+                <Select
+                  className={`user-table-select user-role-select role-${normalizedRole}`}
+                  popupClassName="user-table-select-dropdown"
+                  value={normalizedRole}
+                  style={{ width: 132 }}
+                  onChange={(value) => handleRoleChange(record.id, value)}
+                  options={ROLE_OPTIONS}
+                />
+              ) : getOptionLabel(ROLE_OPTIONS, normalizedRole);
+            }}
           />
           <Column
-            title="Status Compte"
+            title="Statut du compte"
             dataIndex="account_status"
             key="status"
-            render={(status, record) => isAdmin ? (
-              <Select
-                value={String(status || '').toLowerCase()}
-                style={{ width: 120 }}
-                onChange={(value) => handleStatusChange(record.id, value)}
-                options={[
-                  { value: 'active', label: 'Actif' },
-                  { value: 'pending', label: 'En attente' },
-                  { value: 'blocked', label: 'Bloqué' },
-                ]}
-              />
-            ) : status}
+            render={(status, record) => {
+              const normalizedStatus = String(status || '').toLowerCase();
+              return isAdmin ? (
+                <Select
+                  className={`user-table-select user-status-select status-${normalizedStatus}`}
+                  popupClassName="user-table-select-dropdown"
+                  value={normalizedStatus}
+                  style={{ width: 132 }}
+                  onChange={(value) => handleStatusChange(record.id, value)}
+                  options={STATUS_OPTIONS}
+                />
+              ) : getOptionLabel(STATUS_OPTIONS, normalizedStatus);
+            }}
           />
           <Column
             title="Action"

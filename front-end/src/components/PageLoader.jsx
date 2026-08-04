@@ -7,13 +7,8 @@ function PageLoader({ contained = false, message = 'Préparation de votre espace
       aria-live="polite"
       aria-label={message}
     >
-      <div className="page-loader-decoration decoration-one" aria-hidden="true" />
-      <div className="page-loader-decoration decoration-two" aria-hidden="true" />
-
       <div className="page-loader-content">
         <div className="page-loader-emblem" aria-hidden="true">
-          <span className="page-loader-orbit orbit-one" />
-          <span className="page-loader-orbit orbit-two" />
           <div className="page-loader-logo-wrap">
             <img src="/image/logoSaintPaul.png" alt="" />
           </div>

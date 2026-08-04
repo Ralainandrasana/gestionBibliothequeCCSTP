@@ -122,6 +122,70 @@ body {
 .component .boutonAndTable .bouton .right .ant-select .ant-select-selector .ant-select-selection-search  input{
   color: var(--blueSombre);
 }
+
+/* Sélecteurs de rôle et de statut dans la gestion des utilisateurs */
+.user-table-select .ant-select-selector {
+  min-height: 36px !important;
+  padding: 2px 11px !important;
+  border: 1px solid rgba(33, 92, 222, 0.2) !important;
+  border-radius: 10px !important;
+  background: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(6, 28, 107, 0.06) !important;
+  color: var(--blueSombre) !important;
+  font-weight: 650;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.user-table-select .ant-select-selection-item {
+  display: flex;
+  align-items: center;
+}
+
+.user-table-select .ant-select-arrow {
+  color: var(--blueColor);
+}
+
+.user-table-select:hover .ant-select-selector,
+.user-table-select.ant-select-focused .ant-select-selector {
+  border-color: var(--blueColor) !important;
+  box-shadow: 0 0 0 3px rgba(33, 92, 222, 0.12) !important;
+}
+
+.user-role-select.role-admin .ant-select-selector,
+.user-status-select.status-active .ant-select-selector {
+  background: #FFFFFF !important;
+  color: var(--blueColor) !important;
+}
+
+.user-role-select.role-user .ant-select-selector,
+.user-status-select.status-pending .ant-select-selector {
+  background: #FFFFFF !important;
+  color: #25468F !important;
+}
+
+.user-role-select.role-inviter .ant-select-selector,
+.user-status-select.status-blocked .ant-select-selector {
+  background: #FFFFFF !important;
+  color: var(--blueSombre) !important;
+}
+
+.user-table-select-dropdown {
+  padding: 6px !important;
+  border: 1px solid rgba(33, 92, 222, 0.12);
+  border-radius: 10px !important;
+  box-shadow: 0 12px 28px rgba(6, 28, 107, 0.14) !important;
+}
+
+.user-table-select-dropdown .ant-select-item {
+  border-radius: 7px;
+  color: var(--blueSombre);
+}
+
+.user-table-select-dropdown .ant-select-item-option-selected {
+  background: #E9F0FF !important;
+  color: var(--blueColor) !important;
+  font-weight: 650;
+}
 /* .component .boutonAndTable .bouton .right .ant-select{
   margin-left: 20px;
   width: 170px;
@@ -845,17 +909,6 @@ body {
   color: #FFFFFF;
 }
 
-.profile-hero::after {
-  content: '';
-  position: absolute;
-  right: -70px;
-  bottom: -115px;
-  width: 280px;
-  height: 280px;
-  border: 38px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
-}
-
 .profile-hero-avatar {
   position: relative;
   z-index: 1;
@@ -1315,44 +1368,6 @@ body {
   box-shadow: 0 12px 32px rgba(6, 28, 107, 0.08);
 }
 
-.page-loader-decoration {
-  position: absolute;
-  z-index: -1;
-  border: 30px solid currentColor;
-  border-radius: 50%;
-  opacity: 0.055;
-}
-
-.page-loader-fullscreen .decoration-one {
-  top: -130px;
-  right: -80px;
-  width: 330px;
-  height: 330px;
-}
-
-.page-loader-fullscreen .decoration-two {
-  bottom: -170px;
-  left: -100px;
-  width: 400px;
-  height: 400px;
-}
-
-.page-loader-contained .decoration-one {
-  top: -100px;
-  right: -70px;
-  width: 250px;
-  height: 250px;
-  color: var(--blueColor);
-}
-
-.page-loader-contained .decoration-two {
-  bottom: -130px;
-  left: -80px;
-  width: 300px;
-  height: 300px;
-  color: var(--blueSombre);
-}
-
 .page-loader-content {
   position: relative;
   z-index: 1;
@@ -1364,70 +1379,12 @@ body {
 
 .page-loader-emblem {
   position: relative;
-  width: 142px;
-  height: 142px;
+  width: 92px;
+  height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 22px;
-}
-
-.page-loader-orbit {
-  position: absolute;
-  border-style: solid;
-  border-radius: 50%;
-}
-
-.page-loader-orbit::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 14px currentColor;
-}
-
-.page-loader .orbit-one {
-  inset: 3px;
-  border-width: 2px;
-  border-color: rgba(255, 255, 255, 0.18);
-  border-top-color: #FFFFFF;
-  color: #FFFFFF;
-  animation: page-loader-spin 1.45s linear infinite;
-}
-
-.page-loader .orbit-one::after {
-  top: 7px;
-  right: 17px;
-  width: 7px;
-  height: 7px;
-}
-
-.page-loader .orbit-two {
-  inset: 14px;
-  border-width: 1px;
-  border-color: rgba(255, 255, 255, 0.16);
-  border-bottom-color: rgba(255, 255, 255, 0.9);
-  color: rgba(255, 255, 255, 0.9);
-  animation: page-loader-spin-reverse 2.1s linear infinite;
-}
-
-.page-loader .orbit-two::after {
-  bottom: 4px;
-  left: 22px;
-  width: 5px;
-  height: 5px;
-}
-
-.page-loader-contained .orbit-one {
-  border-color: rgba(35, 95, 217, 0.12);
-  border-top-color: var(--blueColor);
-  color: var(--blueColor);
-}
-
-.page-loader-contained .orbit-two {
-  border-color: rgba(6, 28, 107, 0.09);
-  border-bottom-color: var(--blueSombre);
-  color: var(--blueSombre);
+  margin-bottom: 18px;
 }
 
 .page-loader-logo-wrap {
@@ -1493,14 +1450,6 @@ body {
   animation-delay: 0.32s;
 }
 
-@keyframes page-loader-spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes page-loader-spin-reverse {
-  to { transform: rotate(-360deg); }
-}
-
 @keyframes page-loader-breathe {
   0%, 100% { transform: scale(0.96); }
   50% { transform: scale(1.03); }
@@ -1518,7 +1467,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .page-loader-orbit,
   .page-loader-logo-wrap,
   .page-loader-dots span {
     animation: none;

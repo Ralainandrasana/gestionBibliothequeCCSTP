@@ -42,33 +42,12 @@
 
       .boot-loader-emblem {
         position: relative;
-        width: 142px;
-        height: 142px;
+        width: 92px;
+        height: 92px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 22px;
-      }
-
-      .boot-loader-orbit {
-        position: absolute;
-        inset: 3px;
-        border: 2px solid rgba(255, 255, 255, 0.18);
-        border-top-color: #FFFFFF;
-        border-radius: 50%;
-        animation: boot-loader-spin 1.45s linear infinite;
-      }
-
-      .boot-loader-orbit::after {
-        content: "";
-        position: absolute;
-        top: 7px;
-        right: 17px;
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #FFFFFF;
-        box-shadow: 0 0 14px #FFFFFF;
+        margin-bottom: 18px;
       }
 
       .boot-loader-logo {
@@ -122,10 +101,6 @@
       .boot-loader-dots span:nth-child(2) { animation-delay: 0.16s; }
       .boot-loader-dots span:nth-child(3) { animation-delay: 0.32s; }
 
-      @keyframes boot-loader-spin {
-        to { transform: rotate(360deg); }
-      }
-
       @keyframes boot-loader-breathe {
         0%, 100% { transform: scale(0.96); }
         50% { transform: scale(1.03); }
@@ -137,7 +112,6 @@
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .boot-loader-orbit,
         .boot-loader-logo,
         .boot-loader-dots span {
           animation: none;
@@ -150,7 +124,6 @@
       <div class="boot-loader" role="status" aria-label="Démarrage de l’application">
         <div class="boot-loader-content">
           <div class="boot-loader-emblem" aria-hidden="true">
-            <span class="boot-loader-orbit"></span>
             <div class="boot-loader-logo">
               <img src="/image/logoSaintPaul.png" alt="" />
             </div>
