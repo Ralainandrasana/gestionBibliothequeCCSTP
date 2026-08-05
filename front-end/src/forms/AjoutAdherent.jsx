@@ -1,4 +1,4 @@
-import { Button, Input, Form, DatePicker, Select, message, AutoComplete } from 'antd';
+import { Button, Form, DatePicker, Select, message } from 'antd';
 import { RightOutlined, HomeOutlined } from '@ant-design/icons';
 import React, { useState } from 'react';
 import axios from 'axios';
@@ -137,17 +137,15 @@ function AjoutPersonne() {
             name="id_pers"
             rules={[{ required: true, message: 'Veuillez entrer le personne !' }]}
           >
-            <AutoComplete
+            <Select
+              showSearch
+              allowClear
+              filterOption={false}
+              optionLabelProp="label"
               options={options}
               onSearch={fetchMatriculeSuggestions} // Appelé lors de la saisie
-              onSelect={(value) => {
-                // Met à jour le champ avec l'id sélectionné
-                form.setFieldsValue({ id_pers: value });
-              }}
               placeholder="Tapez pour rechercher..."
-            >
-              <Input />
-            </AutoComplete>
+            />
           </Form.Item>
 
           <Form.Item wrapperCol={{ offset: 8, span: 16 }}>

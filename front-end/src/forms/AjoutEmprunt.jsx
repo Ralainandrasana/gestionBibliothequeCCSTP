@@ -1,4 +1,4 @@
-import { Button, Input, Form, DatePicker, Select, message, AutoComplete } from 'antd';
+import { Button, Form, DatePicker, Select, message } from 'antd';
 import { RightOutlined, HomeOutlined } from '@ant-design/icons';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -192,17 +192,15 @@ const handleDateChange = (date) =>{
               },
             ]}
           >
-            <AutoComplete
+            <Select
+              showSearch
+              allowClear
+              filterOption={false}
+              optionLabelProp="label"
               options={optionsAdh}
               onSearch={fetchAdherentSuggestions} // Appelé lors de la saisie
-              onSelect={(value) => {
-                // Met à jour le champ avec l'id sélectionné
-                form.setFieldsValue({ code_pers: value });
-              }}
               placeholder="Tapez pour rechercher..."
-            >
-              <Input />
-            </AutoComplete>
+            />
           </Form.Item>
 
           <Form.Item
@@ -223,17 +221,15 @@ const handleDateChange = (date) =>{
               },
             ]}
           >
-            <AutoComplete
+            <Select
+              showSearch
+              allowClear
+              filterOption={false}
+              optionLabelProp="label"
               options={optionsLiv}
               onSearch={fetchLivreSuggestions} // Appelé lors de la saisie
-              onSelect={(value) => {
-                // Met à jour le champ avec l'id sélectionné
-                form.setFieldsValue({ id_livre: value });
-              }}
               placeholder="Tapez pour rechercher..."
-            >
-              <Input />
-            </AutoComplete>
+            />
           </Form.Item>
 
           <Form.Item label="Date Emprunt" name="date_emprunt" rules={[{ required: true, message: "Veuillez entrer la date d'inscription !" }]}>
