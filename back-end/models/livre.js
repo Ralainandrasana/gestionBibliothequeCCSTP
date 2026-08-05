@@ -1,10 +1,34 @@
 const db = require('../config/db');
+const { runPaginatedQuery } = require('../utils/pagination');
 
 class LivreModel {
     // READ
-    static async getLivres() {
+    static async getLivres(pagination = null) {
+        const baseSql = 'SELECT * FROM livre';
+        if (pagination) {
+            const filterClauses = [];
+            const filterValues = [];
+            const types = pagination.filters?.type?.filter(value => value !== 'Tous') || [];
+            const deweyClasses = pagination.filters?.dewey?.filter(value => value !== 'Tous') || [];
+            if (types.length) {
+                filterClauses.push('source.Type IN (?)');
+                filterValues.push(types);
+            }
+            if (deweyClasses.length) {
+                filterClauses.push('LEFT(CAST(source.deway AS CHAR), 1) IN (?)');
+                filterValues.push(deweyClasses);
+            }
+            return runPaginatedQuery({
+                baseSql,
+                searchColumns: ['id_livre', 'Type', 'titre', 'sous_titre', 'auteur', 'editeur', 'deway', 'cote', 'ISBN', 'langue_pays', 'etat', 'status'],
+                filterClauses,
+                filterValues,
+                orderBy: 'source.id_livre DESC',
+                pagination
+            });
+        }
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM livre order by id_livre desc', [], (error, result) => {
+            db.query(`${baseSql} order by id_livre desc`, [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -147,9 +171,18 @@ static async getAutoCompleteLivres(query) {
     }
 
     // classement livre
-    static async getClassementLivres() {
+    static async getClassementLivres(pagination = null) {
+        const baseSql = "SELECT ROW_NUMBER() OVER(ORDER BY COUNT(le.id_livre) DESC) AS rang, le.id_livre, l.titre, l.deway, l.sous_titre, l.auteur, count(le.id_livre) as nombreEmprunt FROM `livre_emprunt` le left join (`livre` l left join `oeuvre` o on l.idOeuvre = o.id) on le.id_livre = l.id_livre where le.id_livre != '' group by le.id_livre order by nombreEmprunt desc";
+        if (pagination) {
+            return runPaginatedQuery({
+                baseSql,
+                searchColumns: ['rang', 'id_livre', 'titre', 'deway', 'sous_titre', 'auteur', 'nombreEmprunt'],
+                orderBy: 'source.rang ASC',
+                pagination
+            });
+        }
         return new Promise((resolve, reject) => {
-            db.query("SELECT ROW_NUMBER() OVER(ORDER BY COUNT(le.id_livre) DESC) AS rang, le.id_livre, l.titre, l.deway, l.sous_titre, l.auteur, count(le.id_livre) as nombreEmprunt FROM `livre_emprunt` le left join (`livre` l left join `oeuvre` o on l.idOeuvre = o.id) on le.id_livre = l.id_livre where le.id_livre != '' group by le.id_livre order by nombreEmprunt desc", [], (error, result) => {
+            db.query(baseSql, [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

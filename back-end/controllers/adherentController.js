@@ -1,11 +1,13 @@
 const adherentModel = require("../models/adherent");
+const { getPagination, paginatedResponse } = require('../utils/pagination');
 
 class AdherentController {
     // READ
     static async getAllAdherents(req, res) {
         try {
-            const results = await adherentModel.getAdherents();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await adherentModel.getAdherents(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Adherents');
         }
@@ -133,8 +135,9 @@ static async avertirAdherant(req, res) {
     // classement Adherant
     static async getClassementAdherents(req, res) {
         try {
-            const results = await adherentModel.getClassementAdherents();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await adherentModel.getClassementAdherents(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Adherents');
         }

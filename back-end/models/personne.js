@@ -1,10 +1,20 @@
 const db = require('../config/db');
+const { runPaginatedQuery } = require('../utils/pagination');
 
 class PersonneModel {
     // READ
-    static async getPersonnes() {
+    static async getPersonnes(pagination = null) {
+        const baseSql = 'SELECT * FROM personne';
+        if (pagination) {
+            return runPaginatedQuery({
+                baseSql,
+                searchColumns: ['id', 'code', 'nom', 'prenom', 'adresse', 'profession', 'tel', 'CIN'],
+                orderBy: 'source.id DESC',
+                pagination
+            });
+        }
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM personne order by id desc', [], (error, result) => {
+            db.query(`${baseSql} order by id desc`, [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

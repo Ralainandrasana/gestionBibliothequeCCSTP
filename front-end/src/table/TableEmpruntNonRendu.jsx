@@ -1,6 +1,6 @@
-import { Table, Space, Tag, Input, Button, Modal, message, Spin, notification } from 'antd';
+import { Table, Space, Tag, Input, Button, Modal, message, notification } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import dayjs from 'dayjs';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
+import usePaginatedTable from '../hooks/usePaginatedTable';
 import 'moment/locale/fr';
 
 moment.locale('fr');
@@ -21,12 +22,10 @@ function TableEmpruntNonRendu() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const [matricule, setMatricule] = useState([]);
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
+    'http://localhost:3000/api/crud/livre_emprunts_non_rendu'
+  );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]); // Pour gérer la sélection multiple
-  const [adherantAverti, setAdherantAverti] = useState([]);
 
   const navigate = useNavigate();
 
@@ -48,24 +47,8 @@ const fetchMatricule = async () => {
 };
 
 
-  // Fonction pour récupérer les données
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('http://localhost:3000/api/crud/livre_emprunts_non_rendu');
-      setData(response.data);
-      setFilteredData(response.data);
-      console.log(data);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Fetch des data
   useEffect(() => {
-    fetchData();
     fetchMatricule();
   }, []);
 
@@ -157,11 +140,6 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
   });
 };
 
-  // Fonction pour gérer la recherche
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-  };
-
   const handleDelete = (id) => {
     confirm({
       title: 'Êtes-vous sûr de vouloir supprimer cet emprunt?',
@@ -212,18 +190,6 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
     });
   };
 
-  // Filtrage des données selon la recherche
-  useEffect(() => {
-    const filtered = data.filter(empRecent => {
-      const isMatchSearch = 
-        empRecent.trix?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        empRecent.livrcode?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      return isMatchSearch;
-    });
-    setFilteredData(filtered);
-  }, [data, searchTerm]);
-
   // Configuration pour la sélection multiple
   const rowSelection = {
     selectedRowKeys,
@@ -245,19 +211,18 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
           )}
         </div>
         <div className="right">
-          <Input placeholder="Rechercher..." onChange={(e) => handleSearch(e.target.value)} />
+          <Input allowClear placeholder="Rechercher..." onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
       <div className="table">
         <Table 
-          dataSource={filteredData} 
+          dataSource={data}
           rowKey="id"
           rowSelection={isAdmin ? rowSelection : undefined}
           scroll={{ y: height, x: '100%' }}
           loading={loading}
-          pagination={{
-            showTotal: (total) => `Total des personnes : ${total}`,
-          }}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], showTotal: (total) => `Total des emprunts : ${total}` }}
+          onChange={handleTableChange}
         >
           <Column title="#id" dataIndex="id" key="id" width={70}/>
           <Column title="Adherent" dataIndex="trix" key="trix" />

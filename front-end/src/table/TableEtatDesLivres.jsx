@@ -1,12 +1,11 @@
-import { Table, Input, Select, Space, Button, Tag } from 'antd';
+import { Table, Input, Space, Button, Tag } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import moment from 'moment';
 import { useNavigate } from 'react-router-dom';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
+import usePaginatedTable from '../hooks/usePaginatedTable';
 import 'moment/locale/fr';
 
 moment.locale('fr');
@@ -16,57 +15,15 @@ const { Column } = Table;
 function TableEtatDesLivres() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { data, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
+    'http://localhost:3000/api/crud/livres'
+  );
 
   const navigate = useNavigate();
 
   const handleClick = () => {
     navigate('/GestionBibliotheque/EtatDesLivres/ajoutLivre');
   };
-
-  // Fonction pour récupérer les données
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('http://localhost:3000/api/crud/livres');
-      setData(response.data);
-      setFilteredData(response.data);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch des data
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Fonction pour gérer la recherche
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-  };
-
-  // Filtrage des données selon la recherche
-  // Filtrage des données selon la recherche
-useEffect(() => {
-  const filtered = data.filter(livre => {
-    const livreTitre = livre.titre?.toLowerCase() || '';
-    const livreId = livre.id_livre?.toString() || ''; // Conversion de id_livre en string pour comparaison
-    const lowerCaseSearch = searchTerm.toLowerCase();
-
-    return (
-      livreTitre.includes(lowerCaseSearch) ||
-      livreId.includes(lowerCaseSearch)
-    );
-  });
-  setFilteredData(filtered);
-}, [data, searchTerm]);
-
 
   return (
     <div>
@@ -76,18 +33,17 @@ useEffect(() => {
           <Button type='primary' onClick={handleClick}>+ Nouveau</Button>
         </div>
         <div className="right">
-          <Input placeholder='Rechercher...' onChange={(e) => handleSearch(e.target.value)} />
+          <Input allowClear placeholder='Rechercher...' onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
       <div className="table">
         <Table 
-          dataSource={filteredData} 
+          dataSource={data}
           rowKey="id_livre" // Clé unique pour chaque ligne
           scroll={{ y: height, x: 1500 }}
           loading={loading}
-          pagination={{
-            showTotal: (total) => `Total des livres : ${total}`,
-          }}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], showTotal: (total) => `Total des livres : ${total}` }}
+          onChange={handleTableChange}
         >
           <Column title="#id" dataIndex="id_livre" key="id_livre" width={70}/>
           <Column title="Type" dataIndex="Type" key="Type" />

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-import { Table, Space, Tag, message, Modal, Button, Select, Input } from 'antd';
+import { Table, Space, Tag, message, Modal, Button, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import moment from 'moment';
@@ -8,6 +8,7 @@ import 'moment/locale/fr';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
+import usePaginatedTable from '../hooks/usePaginatedTable';
 moment.locale('fr');
 
 const { Column } = Table;
@@ -22,35 +23,19 @@ function TableAdherent() {
     navigate('/Adherent/Adherent/ajoutAdherent');
   };
 
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('Tous');
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('http://localhost:3000/api/crud/adherents');
-      console.log('API response:', response.data); // Log API response
-      const adherents = response.data.map(adherent => ({
+  const [validityFilter, setValidityFilter] = useState('');
+  const { data, loading, setSearchTerm, pagination, handleTableChange, refresh } = usePaginatedTable(
+    'http://localhost:3000/api/crud/adherents',
+    {
+      extraParams: { validity: validityFilter },
+      transformData: adherent => ({
         ...adherent,
         key: adherent.id_adh,
-        validite: moment(adherent.date_fin).isAfter(moment()) ? 'Valide' : 'Invalide',
-      }));
-      setData(adherents);
-      setFilteredData(adherents);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    } finally {
-      setLoading(false);
+        validite: moment(adherent.date_fin).isAfter(moment()) ? 'Valide' : 'Invalide'
+      })
     }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  );
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const showDeleteConfirm = (ids) => {
     confirm({
@@ -69,7 +54,7 @@ function TableAdherent() {
     try {
       await Promise.all(ids.map(id => axios.delete(`http://localhost:3000/api/crud/adherents/${id}`)));
       message.success("Adhérents supprimés avec succès");
-      fetchData();
+      refresh();
       setSelectedRowKeys([]);
     } catch (error) {
       console.error('Erreur lors de la suppression :', error);
@@ -82,25 +67,6 @@ function TableAdherent() {
     onChange: (newSelectedRowKeys) => setSelectedRowKeys(newSelectedRowKeys),
   };
 
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-  };
-
-  const handleFilter = (value) => {
-    setFilterStatus(value);
-  };
-
-  useEffect(() => {
-    const filtered = data.filter(adherent => {
-      const isMatchSearch = adherent.nom?.toLowerCase().includes(searchTerm.toLowerCase()) || adherent.prenom?.toLowerCase().includes(searchTerm.toLowerCase())|| adherent.code?.toLowerCase().includes(searchTerm.toLowerCase());
-      const isValid = moment(adherent.date_fin).isAfter(moment());
-      const isMatchStatus = filterStatus === 'Tous' || (filterStatus === 'Valide' && isValid) || (filterStatus === 'Invalide' && !isValid);
-      return isMatchSearch && isMatchStatus;
-    });
-    console.log('Filtered data:', filtered); // Log filtered data
-    setFilteredData(filtered);
-  }, [data, searchTerm, filterStatus]);
-
   return (
     <div>
       <div className="bouton">
@@ -109,15 +75,20 @@ function TableAdherent() {
           <Button type='primary' onClick={handleClick}>+ Nouveau</Button>
         </div>
         <div className="right">
-          <Input placeholder='Rechercher...' onChange={(e) => handleSearch(e.target.value)} />
+          <Input allowClear placeholder='Rechercher...' onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
       <div className="table">
         <Table
           rowSelection={isAdmin ? rowSelection : undefined}
-          dataSource={filteredData}
+          dataSource={data}
           loading={loading}
-          pagination={{ showTotal: (total) => `Total : ${total}` }}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], showTotal: (total) => `Total : ${total}` }}
+          onChange={(nextPagination, filters) => {
+            const selectedValidity = (filters.validite || []).find(value => value !== 'Tous') || '';
+            setValidityFilter(selectedValidity);
+            handleTableChange(nextPagination);
+          }}
           scroll={{ y: height, x: '100%' }}
         >
           <Column title="M°" dataIndex="code" key="key" width={70}/>
@@ -146,7 +117,6 @@ function TableAdherent() {
               { text: 'Invalide', value: 'Invalide' },
               { text: 'Tous', value: 'Tous' },
             ]}
-            onFilter={(value, record) => record.validite === value || value === 'Tous'}
             render={(_, record) => {
               const isDateExpired = moment(record.date_fin).isBefore(moment());
               return (

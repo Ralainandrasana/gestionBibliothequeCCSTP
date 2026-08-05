@@ -2,6 +2,7 @@ const userModel = require("../models/user");
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ALL_ROLES, normalizeRole, ROLES } = require('../config/accessControl');
+const { getPagination, paginatedResponse } = require('../utils/pagination');
 
 const validateRole = (role) => {
     const normalizedRole = normalizeRole(role);
@@ -17,8 +18,9 @@ class UserController {
     // LIRE
     static async getAllUser(req, res) {
         try {
-            const results = await userModel.getUsers();
-            if (results) res.json(results);
+            const pagination = getPagination(req);
+            const results = await userModel.getUsers(pagination);
+            if (results) res.json(pagination ? paginatedResponse(results, pagination) : results);
             else res.status(404).json({ message: "Aucun utilisateur trouvé." });
         } catch (error) {
             res.status(500).json({ message: "Erreur serveur.", error });

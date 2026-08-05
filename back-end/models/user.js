@@ -1,12 +1,22 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const { runPaginatedQuery } = require('../utils/pagination');
 
 class UserModel {
 	// READ - Récupérer tous les utilisateurs
-	static async getUsers() {
+	static async getUsers(pagination = null) {
+		const baseSql = 'SELECT id, nom, email, photo, roles, email_status, account_status, user_role_id FROM user';
+		if (pagination) {
+			return runPaginatedQuery({
+				baseSql,
+				searchColumns: ['id', 'nom', 'email', 'roles', 'email_status', 'account_status'],
+				orderBy: 'source.id DESC',
+				pagination
+			});
+		}
 		return new Promise((resolve, reject) => {
-			db.query('SELECT id, nom, email, photo, roles, email_status, account_status, user_role_id FROM user', [], (error, result) => {
+			db.query(baseSql, [], (error, result) => {
 				if (error) {
 					reject(error);
 				} else {

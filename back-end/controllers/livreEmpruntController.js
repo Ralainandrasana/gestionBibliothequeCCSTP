@@ -1,13 +1,15 @@
 const livreEmpruntModel = require("../models/livreEmprunt");
 const adherantModel = require("../models/adherent");
 const livreModel = require("../models/livre");
+const { getPagination, paginatedResponse } = require('../utils/pagination');
 
 class LivreEmpruntController {
     // READ
     static async getAllLivreEmpruntsRecent(req, res) {
         try {
-            const results = await livreEmpruntModel.getLivreEmpruntsRecent();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await livreEmpruntModel.getLivreEmpruntsRecent(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Livre Emprunts');
         }
@@ -15,8 +17,9 @@ class LivreEmpruntController {
 
     static async getAllLivreEmpruntsNonRendu(req, res) {
         try {
-            const results = await livreEmpruntModel.getLivreEmpruntsNonRendu();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await livreEmpruntModel.getLivreEmpruntsNonRendu(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Livre Emprunts');
         }

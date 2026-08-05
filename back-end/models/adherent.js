@@ -1,10 +1,25 @@
 const db = require('../config/db');
+const { runPaginatedQuery } = require('../utils/pagination');
 
 class AdherentModel {
     // READ
-    static async getAdherents() {
+    static async getAdherents(pagination = null) {
+        const baseSql = 'SELECT * FROM adherent a left outer join personne p on a.id_pers = p.id';
+        if (pagination) {
+            const validity = pagination.filters?.validity;
+            const filterClauses = validity === 'Valide'
+                ? ['source.date_fin >= CURDATE()']
+                : validity === 'Invalide' ? ['source.date_fin < CURDATE()'] : [];
+            return runPaginatedQuery({
+                baseSql,
+                searchColumns: ['id_adh', 'code', 'nom', 'prenom', 'categorie', 'penaliser'],
+                filterClauses,
+                orderBy: 'source.id_adh DESC',
+                pagination
+            });
+        }
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM adherent a left outer join personne p on a.id_pers = p.id order by id_adh desc', [], (error, result) => {
+            db.query(`${baseSql} order by id_adh desc`, [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -84,10 +99,19 @@ class AdherentModel {
         });
     }
 
-    static async getClassementAdherents() {
+    static async getClassementAdherents(pagination = null) {
+        const baseSql = "SELECT ROW_NUMBER() OVER(ORDER BY COUNT(code_pers) DESC) AS rang, code, nom, prenom, categorie, count(code_pers) as nombreEmpruntEffectue FROM `livre_emprunt` le left join (`adherent` a left join `personne` p on a.id_pers = p.id) on le.code_pers = a.id_adh where id_adh is not null and (le.date_emprunt <= '2024-12-31' and le.date_emprunt >= '2024-01-01') group by code_pers order by nombreEmpruntEffectue desc";
+        if (pagination) {
+            return runPaginatedQuery({
+                baseSql,
+                searchColumns: ['rang', 'code', 'nom', 'prenom', 'categorie', 'nombreEmpruntEffectue'],
+                orderBy: 'source.rang ASC',
+                pagination
+            });
+        }
         return new Promise((resolve, reject) => {
             // Utiliser le bon format pour LIKE
-            db.query("SELECT ROW_NUMBER() OVER(ORDER BY COUNT(code_pers) DESC) AS rang, code, nom, prenom, categorie, count(code_pers) as nombreEmpruntEffectue FROM `livre_emprunt` le left join (`adherent` a left join `personne` p on a.id_pers = p.id) on le.code_pers = a.id_adh where id_adh is not null and (le.date_emprunt <= '2024-12-31' and le.date_emprunt >= '2024-01-01') group by code_pers order by nombreEmpruntEffectue desc", [], (error, result) => {
+            db.query(baseSql, [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

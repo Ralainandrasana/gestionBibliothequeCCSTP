@@ -1,11 +1,13 @@
 const personneModel = require("../models/personne");
+const { getPagination, paginatedResponse } = require('../utils/pagination');
 
 class PersonneController {
     // READ
     static async getAllPersonnes(req, res) {
         try {
-            const results = await personneModel.getPersonnes();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await personneModel.getPersonnes(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Personnes');
         }

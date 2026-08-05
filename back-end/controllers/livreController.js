@@ -1,11 +1,13 @@
 const livreModel = require("../models/livre");
+const { getPagination, paginatedResponse } = require('../utils/pagination');
 
 class LivreController {
     // READ
     static async getAllLivres(req, res) {
         try {
-            const results = await livreModel.getLivres();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await livreModel.getLivres(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Livres');
         }
@@ -74,8 +76,9 @@ class LivreController {
     // effectif total des livres
     static async getClassementLivres(req, res){
         try {
-            const results = await livreModel.getClassementLivres();
-            res.json(results);
+            const pagination = getPagination(req);
+            const results = await livreModel.getClassementLivres(pagination);
+            res.json(pagination ? paginatedResponse(results, pagination) : results);
         } catch (error) {
             res.status(500).send('Error retrieving Livres');
         }

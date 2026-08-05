@@ -47,7 +47,7 @@ CREATE TABLE oeuvre (
 
 -- creation nouveau table dewey
 CREATE TABLE dewey (
-    id INT(11) PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(11) PRIMARY KEY,
     titre VARCHAR(255),
     description VARCHAR(255)
 );

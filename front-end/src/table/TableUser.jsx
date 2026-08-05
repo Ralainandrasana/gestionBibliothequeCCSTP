@@ -1,12 +1,13 @@
 import { Table, Space, Avatar, Select, Input, Button, Modal, message, Spin } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import moment from 'moment';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, normalizeRole, ROLES } from '../config/accessControl';
+import usePaginatedTable from '../hooks/usePaginatedTable';
 import 'moment/locale/fr';
 moment.locale('fr');
 
@@ -32,10 +33,9 @@ const getOptionLabel = (options, value) => (
 function TablePersonne() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
-  const [data, setData] = useState([]);
-  const [filteredData, setFilteredData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
+    'http://localhost:3000/api/crud/users'
+  );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [avatarLoading, setAvatarLoading] = useState({}); // Suivre le chargement des avatars
 
@@ -44,43 +44,6 @@ function TablePersonne() {
   const handleClick = () => {
     navigate('/Parametre/Administrateur/User/ajoutUtilisateur');
   };
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get('http://localhost:3000/api/crud/users');
-      setData(response.data);
-      setFilteredData(response.data);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-  };
-
-
-
-  useEffect(() => {
-    const filtered = data.filter(personne => {
-      const isMatchSearch = 
-        personne.nom?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        personne.prenom?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        personne.code?.toString().includes(searchTerm);
-
-    
-
-      return isMatchSearch;
-    });
-    setFilteredData(filtered);
-  }, [data, searchTerm]);
 
   const handleDelete = (id) => {
     confirm({
@@ -133,32 +96,6 @@ function TablePersonne() {
     }
   };
 
-  const handleDeleteMultiple = () => {
-    confirm({
-      title: 'Êtes-vous sûr de vouloir supprimer ces personnes?',
-      content: 'Cette action est irréversible.',
-      okText: 'Oui',
-      okType: 'danger',
-      cancelText: 'Non',
-      onOk: async () => {
-        try {
-          await Promise.all(selectedRowKeys.map(id => 
-            axios.delete(`http://localhost:3000/api/crud/personnes/${id}`)
-          ));
-          message.success('Personnes supprimées avec succès.');
-          setData((prevData) => prevData.filter((personne) => !selectedRowKeys.includes(personne.id)));
-          setSelectedRowKeys([]);
-        } catch (error) {
-          message.error('Erreur lors de la suppression.');
-          console.error('Erreur lors de la suppression:', error);
-        }
-      },
-      onCancel() {
-        console.log('Suppression annulée');
-      },
-    });
-  };
-
   return (
     <div>
       <div className="bouton">
@@ -167,18 +104,17 @@ function TablePersonne() {
           {isAdmin && <Button type='primary' onClick={handleClick}>+ Nouveau</Button>}
         </div>
         <div className="right">
-          <Input placeholder='Rechercher...' onChange={(e) => handleSearch(e.target.value)} />
+          <Input allowClear placeholder='Rechercher...' onChange={(e) => setSearchTerm(e.target.value)} />
         </div>
       </div>
       <div className="table">
         <Table 
-          dataSource={filteredData} 
+          dataSource={data}
           rowKey="id"
           scroll={{ y: height, x: '100%' }}
           loading={loading}
-          pagination={{
-            showTotal: (total) => `Total des personnes : ${total}`,
-          }}
+          pagination={{ ...pagination, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'], showTotal: (total) => `Total des utilisateurs : ${total}` }}
+          onChange={handleTableChange}
           rowSelection={isAdmin ? {
             selectedRowKeys,
             onChange: (selectedRowKeys) => {

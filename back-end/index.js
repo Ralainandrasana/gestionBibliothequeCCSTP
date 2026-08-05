@@ -2,12 +2,12 @@ const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
 const dotenv = require('dotenv');
+dotenv.config();
+
 const authRoutes = require('./routes/authRoutes');
 const crudRout = require('./routes/crudRouter');
 const otherRout = require('./routes/otherRouter');
 const auditMiddleware = require('./middleware/audit');
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
