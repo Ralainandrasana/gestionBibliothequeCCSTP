@@ -5,6 +5,32 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ALL_ROLES, CATALOGUE_ROLES, hasAnyRole, ROLES, STAFF_ROLES } from '../config/accessControl';
 
+const selectableMenuKeys = [
+  '/dashboard',
+  '/Adherent/Adherent',
+  '/Adherent/Personne',
+  '/GestionBibliotheque/EmpruntLivre/nonRendu',
+  '/GestionBibliotheque/EmpruntLivre/Rendu',
+  '/GestionBibliotheque/EmpruntPeriodique/nonRendu',
+  '/GestionBibliotheque/EmpruntPeriodique/Rendu',
+  '/GestionBibliotheque/EtatDesLivres',
+  '/Gestion Ludotheque',
+  '/Catalogue',
+  '/Classement/Adherant',
+  '/Classement/Livre',
+  '/Parametre/Dewey',
+  '/Parametre/Administrateur/HistoriqueSysteme',
+  '/Parametre/Administrateur/User',
+];
+
+const getSelectedMenuKey = (path) => {
+  const matchingKey = selectableMenuKeys
+    .filter((key) => path === key || path.startsWith(`${key}/`))
+    .sort((first, second) => second.length - first.length)[0];
+
+  return matchingKey || path;
+};
+
 function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,10 +69,11 @@ function SideMenu() {
   // ✅ Mettre à jour quand l'URL change
   useEffect(() => {
     const path = location.pathname;
-    setSelectedKey(path);
+    const activeMenuKey = getSelectedMenuKey(path);
+    setSelectedKey(activeMenuKey);
     
     // Ouvrir les parents correspondants
-    const parents = getParentKeys(path);
+    const parents = getParentKeys(activeMenuKey);
     setOpenKeys(parents);
   }, [location.pathname]);
 
@@ -177,6 +204,7 @@ function SideMenu() {
 
   return (
     <Menu 
+      className="app-side-menu"
       style={{ width: "20%", height: "100%", paddingTop: "15px" }}
       mode="inline"
       selectedKeys={[selectedKey]}

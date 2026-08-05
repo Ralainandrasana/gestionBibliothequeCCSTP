@@ -36,6 +36,28 @@ body {
   color: white;
 }
 
+/* Le parent ne prend le fond actif que lorsque son sous-menu est fermé et que
+   l'enfant sélectionné n'est donc plus visible. */
+.app-side-menu.ant-menu-inline
+  .ant-menu-submenu-selected:not(.ant-menu-submenu-open)
+  > .ant-menu-submenu-title {
+  background-color: var(--selectedMenu) !important;
+  color: #FFFFFF !important;
+  transition: background-color 0.2s ease;
+}
+
+.app-side-menu.ant-menu-inline
+  .ant-menu-submenu-selected:not(.ant-menu-submenu-open)
+  > .ant-menu-submenu-title:hover {
+  background-color: #4778E6 !important;
+}
+
+.app-side-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-title-content,
+.app-side-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-item-icon,
+.app-side-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+  color: #FFFFFF !important;
+}
+
 /* CONTENT */
 .content{
   background: #F8FAFE;
