@@ -93,11 +93,22 @@ function AjoutPersonne() {
         </div>
       </div>
 
-      <div className="form">
-        <Form
-          name="basic"
-          labelCol={{ span: 3 }}
-          wrapperCol={{ span: 10 }}
+        <div className="form person-add-form responsive-add-form">
+          <Form
+            className="person-add-form-inner responsive-add-form-inner"
+            name="basic"
+            labelCol={{
+              xs: { span: 24 },
+              sm: { span: 6 },
+              md: { span: 4 },
+              lg: { span: 3 },
+            }}
+            wrapperCol={{
+              xs: { span: 24 },
+              sm: { span: 18 },
+              md: { span: 16 },
+              lg: { span: 10 },
+            }}
           initialValues={{ remember: true }}
           onFinish={(values) => onFinish(values, navigate)} // Pass navigate to onFinish
           onFinishFailed={onFinishFailed}
@@ -197,7 +208,15 @@ function AjoutPersonne() {
             <Input />
           </Form.Item>
 
-          <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+            <Form.Item
+              className="person-add-form-actions responsive-add-form-actions"
+              wrapperCol={{
+                xs: { span: 24 },
+                sm: { offset: 6, span: 18 },
+                md: { offset: 4, span: 16 },
+                lg: { offset: 3, span: 10 },
+              }}
+            >
             <Button color="primary" htmlType="reset" variant='outlined'>Réinitialiser</Button>
             <Button type="primary" htmlType="submit">Soumettre</Button>
           </Form.Item>

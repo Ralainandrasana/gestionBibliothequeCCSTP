@@ -294,6 +294,86 @@ body {
   color: var(--blueSombre);
 }
 
+.form .ant-form-item-control-input-content > .ant-btn + .ant-btn {
+  margin-inline-start: 12px;
+}
+
+/* Le formulaire d'ajout d'une personne contient davantage de champs : sa
+   hauteur doit suivre son contenu et sa grille doit rester fluide. */
+.responsive-add-form {
+  width: 100%;
+  height: auto;
+  min-height: 80vh;
+  padding: 24px 24px 40px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.responsive-add-form .responsive-add-form-inner,
+.responsive-add-form .ant-form-item,
+.responsive-add-form .ant-form-item-row,
+.responsive-add-form .ant-form-item-control-input,
+.responsive-add-form .ant-form-item-control-input-content {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.responsive-add-form .ant-form-item-control {
+  min-width: 0;
+}
+
+.responsive-add-form .ant-input,
+.responsive-add-form .ant-input-affix-wrapper,
+.responsive-add-form .ant-picker,
+.responsive-add-form .ant-select,
+.responsive-add-form .ant-upload-wrapper,
+.responsive-add-form .ant-upload-list {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.responsive-add-form .ant-upload-list-item-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.responsive-add-form-actions .ant-form-item-control-input-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.responsive-add-form-actions .ant-form-item-control-input-content > .ant-btn + .ant-btn {
+  margin-inline-start: 0;
+}
+
+@media (max-width: 575px) {
+  .responsive-add-form {
+    padding: 18px 14px 36px;
+  }
+
+  .responsive-add-form .ant-form-item-label {
+    padding-bottom: 6px;
+    text-align: left;
+  }
+
+  .responsive-add-form .ant-form-item-label > label {
+    height: auto;
+  }
+
+  .responsive-add-form .ant-form-item-control {
+    margin-inline-start: 0 !important;
+  }
+
+  .responsive-add-form-actions .ant-btn {
+    flex: 1 1 140px;
+  }
+}
+
 .App div .content{
   overflow-y: overlay;
 }
@@ -1843,7 +1923,7 @@ body {
 
 .record-edit-card .ant-form-item-label > label {
   color: #26334D;
-  font-weight: 650;
+  font-weight: 400;
 }
 
 .record-edit-card .ant-input,
