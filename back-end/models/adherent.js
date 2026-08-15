@@ -154,7 +154,7 @@ class AdherentModel {
     // AVERTIR ADHERANT
     static async avertirAdherant(id_adh) {
         return new Promise((resolve, reject) => {
-            db.query('UPDATE adherent SET penaliser = penaliser + 1, sanctionner = CASE WHEN penaliser + 1 >= 3 THEN TRUE ELSE sanctionner END WHERE id_adh = ?;', 
+            db.query('UPDATE adherent SET penaliser = penaliser + 1, sanctionner = CASE WHEN penaliser >= 3 THEN TRUE ELSE sanctionner END WHERE id_adh = ?;', 
                      [id_adh], (error, result) => {
                 if (error) {
                     reject(error);
