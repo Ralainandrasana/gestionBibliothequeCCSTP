@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const crudRout = require('./routes/crudRouter');
 const otherRout = require('./routes/otherRouter');
 const auditMiddleware = require('./middleware/audit');
+const decodeHtmlEntitiesResponse = require('./middleware/decodeHtmlEntitiesResponse');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +23,11 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Les données historiques du projet PHP contiennent parfois des apostrophes
+// et guillemets stockés comme entités HTML. Les réponses JSON les restaurent
+// en texte normal avant d'être consommées par React.
+app.use(decodeHtmlEntitiesResponse);
 
 // Configuration des sessions
 app.use(session({
