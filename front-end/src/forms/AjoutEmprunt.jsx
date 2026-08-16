@@ -38,6 +38,36 @@ const onFinishFailed = (errorInfo) => {
   console.log('Échec de la soumission du formulaire :', errorInfo);
 };
 
+const getAdherentRestrictionMessage = (restriction) => {
+  if (!restriction) return null;
+
+  const messages = [];
+
+  if (Number(restriction.est_sanctionne) === 1) {
+    messages.push("Cet adhérent est sanctionné et ne peut pas effectuer d'emprunt.");
+  }
+
+  if (Number(restriction.adhesion_expiree) === 1) {
+    const expirationDate = restriction.date_fin && dayjs(restriction.date_fin).isValid()
+      ? dayjs(restriction.date_fin).format('DD/MM/YYYY')
+      : null;
+    messages.push(
+      expirationDate
+        ? `L'adhésion de cet adhérent a expiré le ${expirationDate}.`
+        : "L'adhésion de cet adhérent est expirée."
+    );
+  }
+
+  if (Number(restriction.limite_livres_atteinte) === 1) {
+    const borrowedBooks = Number(restriction.nbrLivreEmp) || 0;
+    messages.push(
+      `Cet adhérent a atteint la limite de 2 livres empruntés simultanément (${borrowedBooks} actuellement).`
+    );
+  }
+
+  return messages.join(' • ');
+};
+
 function AjoutPersonne() {
   const navigate = useNavigate(); // Initialize navigate
   const [optionsAdh, setOptionsAdh] = useState([]);
@@ -47,20 +77,17 @@ function AjoutPersonne() {
   const today = dayjs();
   const afterFourteenDay = today.add(14, "day");
 
-  const [matricule, setMatricule] = useState([]);
+  const [adherentsInvalides, setAdherentsInvalides] = useState([]);
   const [livreNonDispo, setLivreNonDispo] = useState([]);
 
 
   // Fonction pour rechercher les matricules depuis la base de données
-  const fetchMatricule = async () => {
+  const fetchAdherentsInvalides = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/api/other/empruntInvalide`);
-        
-        // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-        const matricules = response.data.map(item => item.id_adh);
-        setMatricule(matricules);
+        setAdherentsInvalides(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Erreur lors de la récupération des matricule :", error);
+        console.error("Erreur lors de la récupération des restrictions des adhérents :", error);
       }
   };
 
@@ -78,10 +105,9 @@ function AjoutPersonne() {
 };
 
 useEffect(() => {
-    fetchMatricule();
+    fetchAdherentsInvalides();
     fetchLivreNonDispo();
     }, []);
-console.log('Matricule'+matricule);
 
 const handleDateChange = (date) =>{
     if(date){
@@ -184,8 +210,13 @@ const handleDateChange = (date) =>{
                   if (!value) {
                     return Promise.resolve(); // Pas d'erreur si le champ est vide (gestion faite par `required`)
                   }
-                  if (matricule.includes(value)) {
-                    return Promise.reject(new Error('adherant sanctionné ou date expiré ou nombre livre emprunté supérieur 1'));
+                  const restriction = adherentsInvalides.find(
+                    (item) => String(item.id_adh) === String(value)
+                  );
+                  const restrictionMessage = getAdherentRestrictionMessage(restriction);
+
+                  if (restrictionMessage) {
+                    return Promise.reject(new Error(restrictionMessage));
                   }
                   return Promise.resolve();
                 },

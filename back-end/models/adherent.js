@@ -32,13 +32,27 @@ class AdherentModel {
 //emprunt Invalide
     static async getEmpruntInvalide() {
         return new Promise((resolve, reject) => {
-            db.query('select id_adh from adherent a where a.sanctionner = true or (a.nbrLivreEmp >= 2 or CURRENT_DATE >= a.date_fin);', [], (error, result) => {
+            db.query(
+                `SELECT
+                    a.id_adh,
+                    (a.sanctionner = TRUE) AS est_sanctionne,
+                    (CURRENT_DATE >= a.date_fin) AS adhesion_expiree,
+                    (a.nbrLivreEmp >= 2) AS limite_livres_atteinte,
+                    a.date_fin,
+                    a.nbrLivreEmp
+                 FROM adherent a
+                 WHERE a.sanctionner = TRUE
+                    OR a.nbrLivreEmp >= 2
+                    OR CURRENT_DATE >= a.date_fin`,
+                [],
+                (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve(result);
                 }
-            });
+                }
+            );
         });
     }
 
