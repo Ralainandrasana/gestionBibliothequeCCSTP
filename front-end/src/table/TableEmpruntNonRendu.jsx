@@ -205,8 +205,14 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
           <h2 className="titreTable">Liste Emprunt</h2>
           <Button type="primary" onClick={handleClick}>+ Nouveau</Button>
           {isAdmin && selectedRowKeys.length > 0 && (
-            <Button type="danger" onClick={handleDeleteSelected} style={{ marginLeft: 10 }}>
-              Supprimer Sélection
+            <Button
+              type="primary"
+              danger
+              className="bulk-delete-button"
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteSelected}
+            >
+              Supprimer la sélection
             </Button>
           )}
         </div>

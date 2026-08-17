@@ -68,6 +68,29 @@ function TablePersonne() {
     });
   };
 
+  const handleDeleteSelected = () => {
+    confirm({
+      title: 'Êtes-vous sûr de vouloir supprimer les utilisateurs sélectionnés ?',
+      content: 'Cette action est irréversible.',
+      okText: 'Oui',
+      okType: 'danger',
+      cancelText: 'Non',
+      onOk: async () => {
+        try {
+          await Promise.all(
+            selectedRowKeys.map((id) => axios.delete(`http://localhost:3000/api/crud/users/${id}`))
+          );
+          message.success('Utilisateurs supprimés avec succès.');
+          setData((currentData) => currentData.filter((currentUser) => !selectedRowKeys.includes(currentUser.id)));
+          setSelectedRowKeys([]);
+        } catch (error) {
+          message.error(error.response?.data?.message || 'Erreur lors de la suppression des utilisateurs sélectionnés.');
+          console.error('Erreur lors de la suppression multiple :', error);
+        }
+      },
+    });
+  };
+
   const updateLocalUser = (id, changes) => {
     setData((currentData) =>
       currentData.map((currentUser) =>
@@ -102,6 +125,17 @@ function TablePersonne() {
         <div className="left">
           <h2 className="titreTable">Utilisateur</h2>
           {isAdmin && <Button type='primary' onClick={handleClick}>+ Nouveau</Button>}
+          {isAdmin && selectedRowKeys.length > 0 && (
+            <Button
+              type="primary"
+              danger
+              className="bulk-delete-button"
+              icon={<DeleteOutlined />}
+              onClick={handleDeleteSelected}
+            >
+              Supprimer la sélection
+            </Button>
+          )}
         </div>
         <div className="right">
           <Input allowClear placeholder='Rechercher...' onChange={(e) => setSearchTerm(e.target.value)} />

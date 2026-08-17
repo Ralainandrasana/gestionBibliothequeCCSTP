@@ -75,10 +75,20 @@ class LivreEmpruntController {
     static async deleteLivreEmprunt(req, res) {
         try {
             const { id } = req.params;
-            await livreEmpruntModel.deleteLivreEmprunt(id);
-            res.send('Livre Emprunt deleted successfully');
+            const result = await livreEmpruntModel.deleteLivreEmprunt(id);
+
+            if (!result) {
+                return res.status(404).json({ message: 'Emprunt introuvable.' });
+            }
+
+            res.json({
+                message: result.estNonRendu
+                    ? 'Emprunt supprimé, livre remis en disponibilité et compteur de l’adhérent mis à jour.'
+                    : 'Emprunt supprimé avec succès.'
+            });
         } catch (error) {
-            res.status(500).send('Error deleting Livre Emprunt');
+            console.error('Erreur lors de la suppression de l’emprunt :', error);
+            res.status(500).json({ message: 'Erreur lors de la suppression de l’emprunt.' });
         }
     }
 }

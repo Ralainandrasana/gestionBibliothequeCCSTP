@@ -225,6 +225,24 @@ body {
   background-color: var(--selectedMenu);
 }
 
+.component .bouton .left .bulk-delete-button,
+.component .bouton .left .bulk-delete-button .anticon {
+  color: #FFFFFF !important;
+}
+
+.component .bouton .left .bulk-delete-button {
+  margin-left: 10px;
+  background-color: #D9363E !important;
+  border-color: #D9363E !important;
+}
+
+.component .bouton .left .bulk-delete-button:hover,
+.component .bouton .left .bulk-delete-button:focus {
+  color: #FFFFFF !important;
+  background-color: #FF4D4F !important;
+  border-color: #FF4D4F !important;
+}
+
 /* TABLEAU PERSONNE*/
 .table{
   overflow-x: auto;

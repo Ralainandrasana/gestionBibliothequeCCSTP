@@ -1,6 +1,13 @@
 const db = require('../config/db');
 const { runPaginatedQuery } = require('../utils/pagination');
 
+function normalizeBoolean(value) {
+    return value === true
+        || value === 1
+        || value === '1'
+        || String(value).toLowerCase() === 'true';
+}
+
 class AdherentModel {
     // READ
     static async getAdherents(pagination = null) {
@@ -140,7 +147,7 @@ class AdherentModel {
         return new Promise((resolve, reject) => {
             const { categorie, date_reinscription, date_fin, id_pers } = data;
             db.query('INSERT INTO adherent(categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp) VALUES(?, ?, ?, ?, ?, ?, ?, ?)', 
-                     [categorie, date_reinscription, date_fin, 'Livre', id_pers, 1, false, 0], (error, result) => {
+                     [categorie, date_reinscription, date_fin, 'Livre', id_pers, 0, false, 0], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -154,8 +161,22 @@ class AdherentModel {
     static async updateAdherent(id_adh, data) {
         return new Promise((resolve, reject) => {
             const { categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp } = data;
-            db.query('UPDATE adherent SET categorie = ?, date_reinscription = ?, date_fin = ?, type = ?, id_pers = ?, penaliser = ?, sanctionner = ?, nbrLivreEmp = ? WHERE id_adh = ?', 
-                     [categorie, date_reinscription, date_fin, type, id_pers, penaliser, sanctionner, nbrLivreEmp, id_adh], (error, result) => {
+            const nouvelleSanction = normalizeBoolean(sanctionner);
+            db.query(
+                `UPDATE adherent
+                 SET categorie = ?,
+                     date_reinscription = ?,
+                     date_fin = ?,
+                     type = ?,
+                     id_pers = ?,
+                     penaliser = CASE
+                         WHEN sanctionner = TRUE AND ? = FALSE THEN 0
+                         ELSE ?
+                     END,
+                     sanctionner = ?,
+                     nbrLivreEmp = ?
+                 WHERE id_adh = ?`,
+                     [categorie, date_reinscription, date_fin, type, id_pers, nouvelleSanction, penaliser, nouvelleSanction, nbrLivreEmp, id_adh], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

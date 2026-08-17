@@ -1,6 +1,16 @@
--- insertion colonne sanctionner dans table adherent
-ALTER TABLE adherent ADD COLUMN sanctionner BOOLEAN DEFAULT false;
-update adherent set sanctionner = true where penaliser >= 3;
+-- Ajouter la colonne sanctionner
+ALTER TABLE adherent
+ADD COLUMN sanctionner BOOLEAN DEFAULT false;
+
+-- Sanctionner les adhérents ayant au moins 3 pénalisations
+UPDATE adherent
+SET sanctionner = true
+WHERE penaliser >= 3;
+
+-- Décrémenter penaliser de 1 lorsqu’elle vaut 1
+UPDATE adherent
+SET penaliser = penaliser - 1
+WHERE penaliser = 1;
 
 -- insertion colonne nbrLivreEmp dans table adherent
 ALTER TABLE adherent ADD COLUMN nbrLivreEmp INT(11) DEFAULT 0;

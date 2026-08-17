@@ -45,7 +45,7 @@ function TableAdherent() {
       okType: 'danger',
       cancelText: 'Non',
       onOk() {
-        handleDelete(ids);
+        return handleDelete(ids);
       },
     });
   };
@@ -73,6 +73,17 @@ function TableAdherent() {
         <div className="left">
           <h2 className="titreTable">Adherent</h2>
           <Button type='primary' onClick={handleClick}>+ Nouveau</Button>
+          {isAdmin && selectedRowKeys.length > 0 && (
+            <Button
+              type="primary"
+              danger
+              className="bulk-delete-button"
+              icon={<DeleteOutlined />}
+              onClick={() => showDeleteConfirm(selectedRowKeys)}
+            >
+              Supprimer la sélection
+            </Button>
+          )}
         </div>
         <div className="right">
           <Input allowClear placeholder='Rechercher...' onChange={(e) => setSearchTerm(e.target.value)} />

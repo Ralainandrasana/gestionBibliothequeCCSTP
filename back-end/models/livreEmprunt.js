@@ -1,5 +1,39 @@
 const db = require('../config/db');
 const { runPaginatedQuery } = require('../utils/pagination');
+const { recordSqlQuery, recordQueryResult, bindAuditCallback } = require('../utils/auditContext');
+
+function getConnection() {
+    return new Promise((resolve, reject) => {
+        db.getConnection((error, connection) => error ? reject(error) : resolve(connection));
+    });
+}
+
+function runConnectionQuery(connection, sql, values = []) {
+    recordSqlQuery(sql);
+    return new Promise((resolve, reject) => {
+        connection.query(sql, values, bindAuditCallback((error, result) => {
+            if (error) return reject(error);
+            recordQueryResult(result);
+            resolve(result);
+        }));
+    });
+}
+
+function beginTransaction(connection) {
+    return new Promise((resolve, reject) => {
+        connection.beginTransaction(error => error ? reject(error) : resolve());
+    });
+}
+
+function commitTransaction(connection) {
+    return new Promise((resolve, reject) => {
+        connection.commit(error => error ? reject(error) : resolve());
+    });
+}
+
+function rollbackTransaction(connection) {
+    return new Promise(resolve => connection.rollback(resolve));
+}
 
 class LivreEmpruntModel {
     // READ
@@ -106,15 +140,57 @@ class LivreEmpruntModel {
 
     // DELETE
     static async deleteLivreEmprunt(id) {
-        return new Promise((resolve, reject) => {
-            db.query('DELETE FROM livre_emprunt WHERE id = ?', [id], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const connection = await getConnection();
+
+        try {
+            await beginTransaction(connection);
+
+            const emprunts = await runConnectionQuery(
+                connection,
+                'SELECT id, code_pers, id_livre, status FROM livre_emprunt WHERE id = ? FOR UPDATE',
+                [id]
+            );
+
+            if (emprunts.length === 0) {
+                await rollbackTransaction(connection);
+                return null;
+            }
+
+            const emprunt = emprunts[0];
+            const estNonRendu = Number(emprunt.status) === 0;
+
+            await runConnectionQuery(
+                connection,
+                'DELETE FROM livre_emprunt WHERE id = ?',
+                [id]
+            );
+
+            if (estNonRendu) {
+                await runConnectionQuery(
+                    connection,
+                    'UPDATE livre SET disponible = TRUE WHERE id_livre = ?',
+                    [emprunt.id_livre]
+                );
+                await runConnectionQuery(
+                    connection,
+                    'UPDATE adherent SET nbrLivreEmp = GREATEST(COALESCE(nbrLivreEmp, 0) - 1, 0) WHERE id_adh = ?',
+                    [emprunt.code_pers]
+                );
+            }
+
+            await commitTransaction(connection);
+            return {
+                deleted: true,
+                estNonRendu,
+                id_livre: emprunt.id_livre,
+                id_adh: emprunt.code_pers
+            };
+        } catch (error) {
+            await rollbackTransaction(connection);
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 }
 
