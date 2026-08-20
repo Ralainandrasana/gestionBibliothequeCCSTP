@@ -112,16 +112,76 @@ class LivreEmpruntModel {
 
     // UPDATE
     static async renouvelerLivreEmprunt(id) {
-        return new Promise((resolve, reject) => {
-            db.query('UPDATE livre_emprunt SET renouvelable = ?, date_emprunt = current_date, date_retour = date_add(current_date, interval 14 day) WHERE id = ?',
-                     [false, id], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const connection = await getConnection();
+
+        try {
+            await beginTransaction(connection);
+
+            const emprunts = await runConnectionQuery(
+                connection,
+                `SELECT
+                    le.id,
+                    le.status,
+                    le.renouvelable,
+                    le.code_pers,
+                    a.id_adh,
+                    a.sanctionner,
+                    a.date_fin,
+                    a.nbrLivreEmp,
+                    (CURRENT_DATE >= a.date_fin) AS adhesion_expiree
+                 FROM livre_emprunt le
+                 LEFT JOIN adherent a ON a.id_adh = le.code_pers
+                 WHERE le.id = ?
+                 FOR UPDATE`,
+                [id]
+            );
+
+            if (emprunts.length === 0) {
+                await rollbackTransaction(connection);
+                return { found: false };
+            }
+
+            const emprunt = emprunts[0];
+            const reasons = [];
+
+            if (Number(emprunt.status) !== 0) reasons.push('DEJA_RENDU');
+            if (Number(emprunt.renouvelable) !== 1) reasons.push('DEJA_RENOUVELE');
+            if (!emprunt.id_adh) reasons.push('ADHERENT_INTROUVABLE');
+            if (Number(emprunt.sanctionner) === 1) reasons.push('ADHERENT_SANCTIONNE');
+            if (Number(emprunt.adhesion_expiree) === 1) reasons.push('ADHESION_EXPIREE');
+            // Un renouvellement équivaut à rendre puis réemprunter le même
+            // livre : 2 emprunts sont donc acceptés, mais pas davantage.
+            if (Number(emprunt.nbrLivreEmp) > 2) reasons.push('LIMITE_LIVRES_DEPASSEE');
+
+            if (reasons.length > 0) {
+                await rollbackTransaction(connection);
+                return { found: true, renewed: false, reasons, emprunt };
+            }
+
+            await runConnectionQuery(
+                connection,
+                `UPDATE livre_emprunt
+                 SET renouvelable = FALSE,
+                     date_emprunt = CURRENT_DATE,
+                     date_retour = DATE_ADD(CURRENT_DATE, INTERVAL 14 DAY)
+                 WHERE id = ?`,
+                [id]
+            );
+
+            const [empruntRenouvele] = await runConnectionQuery(
+                connection,
+                'SELECT date_emprunt, date_retour, renouvelable FROM livre_emprunt WHERE id = ?',
+                [id]
+            );
+
+            await commitTransaction(connection);
+            return { found: true, renewed: true, emprunt: empruntRenouvele };
+        } catch (error) {
+            await rollbackTransaction(connection);
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
     // UPDATE

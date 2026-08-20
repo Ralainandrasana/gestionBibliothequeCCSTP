@@ -1,6 +1,6 @@
 import { Table, Space, Tag, Input, Button, Modal, message, notification } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import moment from 'moment';
@@ -15,13 +15,11 @@ moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;
-const today = dayjs();
 
 
 function TableEmpruntNonRendu() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
-  const [matricule, setMatricule] = useState([]);
   const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
     'http://localhost:3000/api/crud/livre_emprunts_non_rendu'
   );
@@ -33,36 +31,16 @@ function TableEmpruntNonRendu() {
     navigate('/GestionBibliotheque/EmpruntLivre/nonRendu/ajoutEmprunt');
   };
 
-// Fonction pour rechercher les matricules depuis la base de données
-const fetchMatricule = async () => {
-  try {
-    const response = await axios.get(`http://localhost:3000/api/other/empruntInvalide`);
-    
-    // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-    const matricules = response.data.map(item => item.id_adh);
-    setMatricule(matricules);
-  } catch (error) {
-    console.error("Erreur lors de la récupération des matricule :", error);
-  }
-};
-
-
-  // Fetch des data
-  useEffect(() => {
-    fetchMatricule();
-  }, []);
-
-
 //renouveler livre
 const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
   confirm({
-    title: 'Êtes-vous sûr de vouloir renouveler cet emprunt?',
-    content: 'Cette action est irréversible.',
+    title: 'Êtes-vous sûr de vouloir renouveler cet emprunt ?',
+    content: 'La nouvelle date de retour sera fixée à 14 jours à partir d’aujourd’hui.',
     okText: 'Oui',
     cancelText: 'Non',
     onOk: async () => {
       try {
-        if(today.isAfter(dayjs(date_retour))){//RETOUR EN RETARD
+        if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
           await axios.put(`http://localhost:3000/api/other/adherent/avertir/${id_adh}`);
           notification.warning({
             message: "Adhérent Averti",
@@ -70,29 +48,67 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
             duration: 10, // Durée en secondes (0 pour une notification permanente)
           });
         }
-        if(matricule.includes(id_adh)){
-          await axios.put(`http://localhost:3000/api/other/livre_emprunts/rendre/${id}`);
-          await axios.put(`http://localhost:3000/api/other/adherent/rendre/${id_adh}`);
-          await axios.put(`http://localhost:3000/api/other/livre/rendre/${id_livre}`);
-          setData((prevData) => prevData.filter((personne) => personne.id !== id));
-          notification.error({
-            message: "Renouvelement refusé",
-            description: "emprunt rendu automatiqument car date validite expire ou adherant sanctionne ou nombre de livre superieur a 2",
-            duration: 10, // Durée en secondes (0 pour une notification permanente)
-          });
-        }else{
-          await axios.put(`http://localhost:3000/api/other/livre_emprunts/renouveler/${id}`);
-          message.success('Emprunt renouvelé avec succès.');
-          setData((prevData) =>
-            prevData.map((item) =>
-              item.id === id ? { ...item, renouvelable: false, date_emprunt: moment(), date_retour: moment().add(14, 'days') } : item
-            )
-          );
-        }
-        
+        const response = await axios.put(`http://localhost:3000/api/other/livre_emprunts/renouveler/${id}`);
+        message.success(response.data?.message || 'Emprunt renouvelé avec succès.');
+        setData((prevData) =>
+          prevData.map((item) =>
+            item.id === id
+              ? {
+                  ...item,
+                  renouvelable: false,
+                  date_emprunt: response.data?.date_emprunt || moment(),
+                  date_retour: response.data?.date_retour || moment().add(14, 'days'),
+                }
+              : item
+          )
+        );
       } catch (error) {
-        message.error('Erreur lors du renouvelement');
-        console.error('Erreur lors du renouvelement', error);
+        const refusal = error.response?.status === 409
+          && error.response?.data?.code === 'RENEWAL_REFUSED';
+
+        if (!refusal) {
+          message.error(error.response?.data?.message || 'Erreur lors du renouvellement.');
+          console.error('Erreur lors du renouvellement', error);
+          return;
+        }
+
+        const refusalMessage = error.response.data.message || 'Cet emprunt ne peut pas être renouvelé.';
+        const reasons = error.response.data.reasons || [];
+        const peutEnregistrerRetour = !reasons.includes('DEJA_RENDU')
+          && !reasons.includes('ADHERENT_INTROUVABLE');
+
+        if (!peutEnregistrerRetour) {
+          notification.error({
+            message: 'Renouvellement refusé',
+            description: refusalMessage,
+            duration: 10,
+          });
+          return;
+        }
+
+        confirm({
+          title: 'Renouvellement refusé',
+          content: (
+            <div>
+              <p>{refusalMessage}</p>
+              <p>Voulez-vous enregistrer maintenant le retour réel de ce livre ?</p>
+            </div>
+          ),
+          okText: 'Oui, rendre le livre',
+          cancelText: 'Non, conserver l’emprunt',
+          onOk: async () => {
+            try {
+              await axios.put(`http://localhost:3000/api/other/livre_emprunts/rendre/${id}`);
+              await axios.put(`http://localhost:3000/api/other/adherent/rendre/${id_adh}`);
+              await axios.put(`http://localhost:3000/api/other/livre/rendre/${id_livre}`);
+              setData((prevData) => prevData.filter((emprunt) => emprunt.id !== id));
+              message.success('Retour du livre enregistré avec succès.');
+            } catch (returnError) {
+              message.error('Erreur lors de l’enregistrement du retour.');
+              console.error('Erreur lors du retour après refus du renouvellement :', returnError);
+            }
+          },
+        });
       }
     },
     onCancel() {
@@ -113,7 +129,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
         await axios.put(`http://localhost:3000/api/other/livre_emprunts/rendre/${id}`);
         await axios.put(`http://localhost:3000/api/other/adherent/rendre/${id_adh}`);
         await axios.put(`http://localhost:3000/api/other/livre/rendre/${id_livre}`);
-        if(today.isAfter(dayjs(date_retour))){//RETOUR EN RETARD
+        if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
           await axios.put(`http://localhost:3000/api/other/adherent/avertir/${id_adh}`);
 
           //recuperation nombre d'avertissement

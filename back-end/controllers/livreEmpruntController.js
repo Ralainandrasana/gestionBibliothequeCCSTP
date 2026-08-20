@@ -3,6 +3,39 @@ const adherantModel = require("../models/adherent");
 const livreModel = require("../models/livre");
 const { getPagination, paginatedResponse } = require('../utils/pagination');
 
+function formatDateFr(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? null
+        : new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC' }).format(date);
+}
+
+function getRenewalRefusalMessages(result) {
+    const messages = [];
+    const emprunt = result.emprunt || {};
+
+    for (const reason of result.reasons || []) {
+        if (reason === 'DEJA_RENDU') messages.push('Cet emprunt a déjà été rendu.');
+        if (reason === 'DEJA_RENOUVELE') messages.push('Cet emprunt a déjà été renouvelé une fois.');
+        if (reason === 'ADHERENT_INTROUVABLE') messages.push("L'adhérent associé est introuvable.");
+        if (reason === 'ADHERENT_SANCTIONNE') messages.push("Cet adhérent est sanctionné.");
+        if (reason === 'ADHESION_EXPIREE') {
+            const dateFin = formatDateFr(emprunt.date_fin);
+            messages.push(dateFin
+                ? `L'adhésion de cet adhérent a expiré le ${dateFin}.`
+                : "L'adhésion de cet adhérent est expirée.");
+        }
+        if (reason === 'LIMITE_LIVRES_DEPASSEE') {
+            messages.push(
+                `Cet adhérent possède actuellement ${Number(emprunt.nbrLivreEmp) || 0} livres empruntés ; le renouvellement est refusé au-delà de 2.`
+            );
+        }
+    }
+
+    return messages;
+}
+
 class LivreEmpruntController {
     // READ
     static async getAllLivreEmpruntsRecent(req, res) {
@@ -52,10 +85,30 @@ class LivreEmpruntController {
     static async renouvelerLivreEmprunt(req, res) {
         try {
             const { id } = req.params;
-            await livreEmpruntModel.renouvelerLivreEmprunt(id);
-            res.send('Livre Emprunt updated successfully');
+            const result = await livreEmpruntModel.renouvelerLivreEmprunt(id);
+
+            if (!result.found) {
+                return res.status(404).json({ message: 'Emprunt introuvable.' });
+            }
+
+            if (!result.renewed) {
+                const messages = getRenewalRefusalMessages(result);
+                return res.status(409).json({
+                    code: 'RENEWAL_REFUSED',
+                    message: messages.join(' • '),
+                    reasons: result.reasons
+                });
+            }
+
+            res.json({
+                message: 'Emprunt renouvelé avec succès.',
+                date_emprunt: result.emprunt.date_emprunt,
+                date_retour: result.emprunt.date_retour,
+                renouvelable: Boolean(result.emprunt.renouvelable)
+            });
         } catch (error) {
-            res.status(500).send('Error updating Livre Emprunt');
+            console.error('Erreur lors du renouvellement :', error);
+            res.status(500).json({ message: 'Erreur lors du renouvellement de l’emprunt.' });
         }
     }
 

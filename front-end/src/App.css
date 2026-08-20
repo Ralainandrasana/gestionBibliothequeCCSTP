@@ -19,6 +19,7 @@ body {
   --blueTh: #F5F8FA;
   --blueVif: #05DBF2;
   --gray: #969FBD;
+  --curveRed: #F2055C;
 }
 .ant-menu{
   background: var(--blueColor);
@@ -232,15 +233,15 @@ body {
 
 .component .bouton .left .bulk-delete-button {
   margin-left: 10px;
-  background-color: #D9363E !important;
-  border-color: #D9363E !important;
+  background-color: var(--curveRed) !important;
+  border-color: var(--curveRed) !important;
 }
 
 .component .bouton .left .bulk-delete-button:hover,
 .component .bouton .left .bulk-delete-button:focus {
   color: #FFFFFF !important;
-  background-color: #FF4D4F !important;
-  border-color: #FF4D4F !important;
+  background-color: #D90452 !important;
+  border-color: #D90452 !important;
 }
 
 /* TABLEAU PERSONNE*/
