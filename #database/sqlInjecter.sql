@@ -29,6 +29,11 @@ ALTER TABLE livre_emprunt ADD COLUMN dateReelRetour DATE DEFAULT NULL;
 ALTER TABLE livre_emprunt ADD COLUMN renouvelable BOOLEAN DEFAULT true;
 update livre_emprunt set renouvelable = false where status = 1;
 
+-- Conserver la date du premier emprunt lorsqu'un emprunt est renouvele.
+-- La valeur reste NULL tant que l'emprunt n'a jamais ete renouvele.
+ALTER TABLE livre_emprunt
+ADD COLUMN date_emprunt_initiale DATE DEFAULT NULL AFTER date_emprunt;
+
 -- insertion colonne anneeEdition dans table livre
 ALTER TABLE livre ADD COLUMN anneeEdition VARCHAR(11) DEFAULT '';
 
@@ -97,4 +102,101 @@ SET l.idOeuvre = o.id;
 
 
 -- `dewey`(`id`, `titre`, `description`)
+
+
+-- ============================================================
+-- Nettoyage des adherents orphelins et cascade personne -> adherent
+-- IMPORTANT : faire une sauvegarde complete de la base avant execution.
+-- Les emprunts sont sauvegardes ci-dessous avant leur suppression.
+-- ============================================================
+
+-- 1. Sauvegarder les adherents orphelins et leurs emprunts.
+CREATE TABLE IF NOT EXISTS backup_adherents_orphelins_20260824 LIKE adherent;
+
+INSERT IGNORE INTO backup_adherents_orphelins_20260824
+SELECT a.*
+FROM adherent a
+LEFT JOIN personne p ON p.id = a.id_pers
+WHERE p.id IS NULL;
+
+CREATE TABLE IF NOT EXISTS backup_emprunts_orphelins_20260824 LIKE livre_emprunt;
+
+INSERT IGNORE INTO backup_emprunts_orphelins_20260824
+SELECT le.*
+FROM livre_emprunt le
+JOIN adherent a
+    ON le.code_pers REGEXP '^[0-9]+$'
+   AND CAST(le.code_pers AS UNSIGNED) = a.id_adh
+LEFT JOIN personne p ON p.id = a.id_pers
+WHERE p.id IS NULL;
+
+-- 2. Nettoyer les donnees liees dans une transaction.
+START TRANSACTION;
+
+CREATE TEMPORARY TABLE tmp_adherents_orphelins (
+    id_adh INT PRIMARY KEY
+);
+
+INSERT INTO tmp_adherents_orphelins (id_adh)
+SELECT a.id_adh
+FROM adherent a
+LEFT JOIN personne p ON p.id = a.id_pers
+WHERE p.id IS NULL;
+
+-- Memoriser les livres des emprunts actifs qui vont etre supprimes.
+CREATE TEMPORARY TABLE tmp_livres_orphelins_actifs (
+    id_livre INT PRIMARY KEY
+);
+
+INSERT IGNORE INTO tmp_livres_orphelins_actifs (id_livre)
+SELECT CAST(le.id_livre AS UNSIGNED)
+FROM livre_emprunt le
+JOIN tmp_adherents_orphelins t
+    ON le.code_pers REGEXP '^[0-9]+$'
+   AND CAST(le.code_pers AS UNSIGNED) = t.id_adh
+WHERE le.status = 0
+  AND le.id_livre REGEXP '^[0-9]+$';
+
+-- Supprimer tous les emprunts des adherents orphelins.
+DELETE le
+FROM livre_emprunt le
+JOIN tmp_adherents_orphelins t
+    ON le.code_pers REGEXP '^[0-9]+$'
+   AND CAST(le.code_pers AS UNSIGNED) = t.id_adh;
+
+-- Remettre un livre a disposition seulement s'il ne possede plus
+-- aucun autre emprunt actif.
+UPDATE livre l
+JOIN tmp_livres_orphelins_actifs t ON t.id_livre = l.id_livre
+SET l.disponible = TRUE
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM livre_emprunt le
+    WHERE le.status = 0
+      AND le.id_livre REGEXP '^[0-9]+$'
+      AND CAST(le.id_livre AS UNSIGNED) = l.id_livre
+);
+
+-- Supprimer les adherents devenus inutiles.
+DELETE a
+FROM adherent a
+JOIN tmp_adherents_orphelins t ON t.id_adh = a.id_adh;
+
+COMMIT;
+
+DROP TEMPORARY TABLE IF EXISTS tmp_livres_orphelins_actifs;
+DROP TEMPORARY TABLE IF EXISTS tmp_adherents_orphelins;
+
+-- 3. Cette verification doit retourner 0 avant l'ajout de la contrainte.
+SELECT COUNT(*) AS nombre_adherents_orphelins
+FROM adherent a
+LEFT JOIN personne p ON p.id = a.id_pers
+WHERE p.id IS NULL;
+
+-- 4. Appliquer la cascade uniquement entre personne et adherent.
+ALTER TABLE adherent
+ADD CONSTRAINT fk_adherent_personne
+FOREIGN KEY (id_pers) REFERENCES personne(id)
+ON UPDATE CASCADE
+ON DELETE CASCADE;
 
