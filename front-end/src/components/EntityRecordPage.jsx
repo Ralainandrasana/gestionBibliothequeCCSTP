@@ -195,7 +195,13 @@ function EntityRecordPage({ entity, mode }) {
         />
       );
     }
-    return <Input type={field.type === 'email' ? 'email' : 'text'} />;
+    return (
+      <Input
+        type={field.type === 'email' ? 'email' : 'text'}
+        maxLength={field.maxLength}
+        inputMode={field.inputMode}
+      />
+    );
   };
 
   const handleSave = async (values) => {
@@ -363,6 +369,7 @@ function EntityRecordPage({ entity, mode }) {
                     required: field.required !== false && field.type !== 'boolean',
                     message: `Veuillez renseigner ${field.label.toLowerCase()}.`,
                   },
+                  ...(field.rules || []),
                 ]}
               >
                 {renderInput(field)}

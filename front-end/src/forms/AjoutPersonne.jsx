@@ -154,7 +154,7 @@ function AjoutPersonne() {
               },
             ]}
           >
-            <Input />
+            <Input maxLength={12} inputMode="numeric" />
           </Form.Item>
 
 
@@ -182,7 +182,7 @@ function AjoutPersonne() {
               }
               ]}
           >
-            <Input />
+            <Input maxLength={10} inputMode="numeric" />
           </Form.Item>
 
           <Form.Item label="Inscrit le" name="date_inscription" rules={[{ required: true, message: 'Veuillez entrer la date d\'inscription !' }]}>
