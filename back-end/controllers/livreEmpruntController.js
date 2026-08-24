@@ -102,6 +102,7 @@ class LivreEmpruntController {
 
             res.json({
                 message: 'Emprunt renouvelé avec succès.',
+                date_emprunt_initiale: result.emprunt.date_emprunt_initiale,
                 date_emprunt: result.emprunt.date_emprunt,
                 date_retour: result.emprunt.date_retour,
                 renouvelable: Boolean(result.emprunt.renouvelable)

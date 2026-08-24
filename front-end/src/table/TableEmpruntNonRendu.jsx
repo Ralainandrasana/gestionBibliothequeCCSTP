@@ -56,6 +56,7 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
               ? {
                   ...item,
                   renouvelable: false,
+                  date_emprunt_initiale: response.data?.date_emprunt_initiale || item.date_emprunt,
                   date_emprunt: response.data?.date_emprunt || moment(),
                   date_retour: response.data?.date_retour || moment().add(14, 'days'),
                 }

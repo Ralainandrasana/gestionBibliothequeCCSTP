@@ -59,7 +59,7 @@ class LivreEmpruntModel {
     }
 
     static async getLivreEmpruntsNonRendu(pagination = null) {
-        const baseSql = "SELECT at.id_adh, le.id_livre, le.renouvelable, le.id, at.trix, ln.livrcode, le.date_emprunt, le.date_retour FROM (livre_emprunt le left outer join adherent_tri at on le.code_pers = at.id_adh) left outer join livrenum ln on le.id_livre = ln.id_livre where status = 0 and (at.trix is not null and ln.livrcode is not null)";
+        const baseSql = "SELECT at.id_adh, le.id_livre, le.renouvelable, le.id, at.trix, ln.livrcode, le.date_emprunt_initiale, le.date_emprunt, le.date_retour FROM (livre_emprunt le left outer join adherent_tri at on le.code_pers = at.id_adh) left outer join livrenum ln on le.id_livre = ln.id_livre where status = 0 and (at.trix is not null and ln.livrcode is not null)";
         if (pagination) {
             return runPaginatedQuery({
                 baseSql,
@@ -161,7 +161,8 @@ class LivreEmpruntModel {
             await runConnectionQuery(
                 connection,
                 `UPDATE livre_emprunt
-                 SET renouvelable = FALSE,
+                 SET date_emprunt_initiale = COALESCE(date_emprunt_initiale, date_emprunt),
+                     renouvelable = FALSE,
                      date_emprunt = CURRENT_DATE,
                      date_retour = DATE_ADD(CURRENT_DATE, INTERVAL 14 DAY)
                  WHERE id = ?`,
@@ -170,7 +171,7 @@ class LivreEmpruntModel {
 
             const [empruntRenouvele] = await runConnectionQuery(
                 connection,
-                'SELECT date_emprunt, date_retour, renouvelable FROM livre_emprunt WHERE id = ?',
+                'SELECT date_emprunt_initiale, date_emprunt, date_retour, renouvelable FROM livre_emprunt WHERE id = ?',
                 [id]
             );
 
