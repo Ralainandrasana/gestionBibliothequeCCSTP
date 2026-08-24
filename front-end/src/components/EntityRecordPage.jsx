@@ -124,7 +124,7 @@ function EntityRecordPage({ entity, mode }) {
     };
 
     fetchRecord();
-  }, [config, editableFields, form, id]);
+  }, [config, editableFields, form, id, mode]);
 
   const viewPath = `${config.recordPath}/view/${id}`;
   const editPath = `${config.recordPath}/edit/${id}`;
