@@ -32,7 +32,6 @@ import { entityRecords } from '../config/entityRecords';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import PageLoader from './PageLoader';
-import { waitForMinimumLoading } from '../utils/minimumLoading';
 
 const { confirm } = Modal;
 
@@ -58,7 +57,6 @@ function EntityRecordPage({ entity, mode }) {
 
   useEffect(() => {
     const fetchRecord = async () => {
-      const startedAt = Date.now();
       setLoading(true);
       try {
         const response = await axios.get(config.listEndpoint);
@@ -121,7 +119,6 @@ function EntityRecordPage({ entity, mode }) {
       } catch (error) {
         message.error(error.response?.data?.message || `Impossible de charger ${config.title.toLowerCase()}.`);
       } finally {
-        await waitForMinimumLoading(startedAt);
         setLoading(false);
       }
     };

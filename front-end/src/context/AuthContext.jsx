@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
-import { waitForMinimumLoading } from '../utils/minimumLoading';
 
 const AuthContext = createContext();
 
@@ -32,7 +31,6 @@ export const AuthProvider = ({ children }) => {
     let active = true;
 
     const checkSession = async () => {
-      const startedAt = Date.now();
       try {
         const response = await fetchCurrentSession();
         if (active && response.data.success) {
@@ -42,7 +40,6 @@ export const AuthProvider = ({ children }) => {
       } catch {
         console.log('Session inactive');
       } finally {
-        await waitForMinimumLoading(startedAt);
         if (active) setLoading(false);
       }
     };
