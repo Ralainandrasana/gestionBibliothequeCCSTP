@@ -117,11 +117,18 @@ class LivreEmpruntController {
     static async rendreLivreEmprunt(req, res) {
         try {
             const { id } = req.params;
-            await livreEmpruntModel.rendreLivreEmprunt(id);
-            res.send('Livre Emprunt updated successfully');
+            const result = await livreEmpruntModel.rendreLivreEmprunt(id);
+
+            if (result.affectedRows === 0) {
+                return res.status(409).json({
+                    message: 'Cet emprunt est introuvable ou a déjà été rendu.'
+                });
+            }
+
+            res.json({ message: 'Retour du livre enregistré avec succès.' });
         } catch (error) {
-            console.log(error)
-            res.status(500).send('Error updating Livre Emprunt');
+            console.error('Erreur lors du retour du livre :', error);
+            res.status(500).json({ message: 'Erreur lors de l’enregistrement du retour.' });
         }
     }
 

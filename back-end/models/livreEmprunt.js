@@ -85,7 +85,7 @@ class LivreEmpruntModel {
         return new Promise((resolve, reject) => {
             const { code_pers, id_livre, date_emprunt, date_retour } = data;
             db.query('INSERT INTO livre_emprunt(code_pers, id_livre, date_emprunt, date_retour, status, dateReelRetour, renouvelable) VALUES(?, ?, ?, ?, ?, ?, ?)', 
-                     [code_pers, id_livre, date_emprunt, date_retour, 0, '0000-00-00', true], (error, result) => {
+                     [code_pers, id_livre, date_emprunt, date_retour, 0, null, true], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
@@ -188,8 +188,12 @@ class LivreEmpruntModel {
     // UPDATE
     static async rendreLivreEmprunt(id) {
         return new Promise((resolve, reject) => {
-            db.query('UPDATE livre_emprunt SET status = ? WHERE id = ?', 
-                     [true, id], (error, result) => {
+            db.query(
+                `UPDATE livre_emprunt
+                 SET status = 1,
+                     dateReelRetour = COALESCE(NULLIF(dateReelRetour, '0000-00-00'), CURRENT_DATE)
+                 WHERE id = ? AND status = 0`,
+                [id], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
