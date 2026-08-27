@@ -200,3 +200,26 @@ FOREIGN KEY (id_pers) REFERENCES personne(id)
 ON UPDATE CASCADE
 ON DELETE CASCADE;
 
+
+-- ============================================================
+-- Index de performance du projet gestionBibliothequeCCSP
+-- Executes et verifies avec EXPLAIN le 27/08/2026 sur MariaDB 10.4.
+-- IF NOT EXISTS permet de rejouer ce bloc sans erreur de doublon.
+-- ============================================================
+
+-- Liste des emprunts non rendus, triee par identifiant recent.
+CREATE INDEX IF NOT EXISTS idx_le_status_id
+ON livre_emprunt (status, id);
+
+-- Classement des livres selon leur nombre d'emprunts.
+CREATE INDEX IF NOT EXISTS idx_le_id_livre
+ON livre_emprunt (id_livre);
+
+-- Classement des adherents sur une periode d'emprunt.
+CREATE INDEX IF NOT EXISTS idx_le_date_code_pers
+ON livre_emprunt (date_emprunt, code_pers);
+
+-- Evolution mensuelle des inscriptions et reinscriptions.
+CREATE INDEX IF NOT EXISTS idx_adherent_date_reinscription
+ON adherent (date_reinscription);
+
