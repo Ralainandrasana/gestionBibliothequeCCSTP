@@ -11,6 +11,8 @@ const crudRout = require('./routes/crudRouter');
 const otherRout = require('./routes/otherRouter');
 const auditMiddleware = require('./middleware/audit');
 const decodeHtmlEntitiesResponse = require('./middleware/decodeHtmlEntitiesResponse');
+const gzipJsonResponse = require('./middleware/gzipJsonResponse');
+const createPrecompressedStatic = require('./middleware/precompressedStatic');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,6 +28,10 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Compresser les reponses JSON assez volumineuses avec le Gzip natif de Node.
+// Le niveau rapide limite le travail CPU sur les postes aux ressources modestes.
+app.use(gzipJsonResponse);
 
 // Les données historiques du projet PHP contiennent parfois des apostrophes
 // et guillemets stockés comme entités HTML. Les réponses JSON les restaurent
@@ -62,6 +68,9 @@ app.use('/api', (req, res) => {
 
 // En production, Express sert directement le build Vite.
 if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
+  // Envoyer les variantes .gz generees au build aux navigateurs compatibles.
+  app.use(createPrecompressedStatic(frontendDistPath));
+
   app.use(express.static(frontendDistPath, {
     index: false,
     setHeaders: (res, filePath) => {
