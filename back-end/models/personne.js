@@ -78,14 +78,23 @@ class PersonneModel {
     // READ
     static async getAutoCompletePersonnes(query) {
         return new Promise((resolve, reject) => {
-            // Utiliser le bon format pour LIKE
-            db.query("SELECT * FROM tripers WHERE tri LIKE ?", [`%${query}%`], (error, result) => {
+            const search = String(query || '').trim().slice(0, 100);
+            if (!search) return resolve([]);
+            db.query(
+                `SELECT id, tri
+                 FROM tripers
+                 WHERE tri LIKE ?
+                 ORDER BY (tri LIKE ?) DESC, tri ASC
+                 LIMIT 20`,
+                [`%${search}%`, `${search}%`],
+                (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve(result);
                 }
-            });
+                }
+            );
         });
     }
     // READ

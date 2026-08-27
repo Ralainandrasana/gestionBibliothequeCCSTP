@@ -27,7 +27,6 @@ class PersonneController {
     static async getAutoCompletePersonnes(req, res) {
         try {
             const results = await personneModel.getAutoCompletePersonnes(req.query.search);
-            console.log(req.query.search)
             res.json(results);
         } catch (error) {
             res.status(500).send('Error retrieving Personnes');

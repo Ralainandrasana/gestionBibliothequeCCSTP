@@ -62,14 +62,23 @@ class LivreModel {
 // READ
 static async getAutoCompleteLivres(query) {
     return new Promise((resolve, reject) => {
-        // Utiliser le bon format pour LIKE
-        db.query("SELECT * FROM livrenum WHERE livrcode LIKE ?", [`%${query}%`], (error, result) => {
+        const search = String(query || '').trim().slice(0, 100);
+        if (!search) return resolve([]);
+        db.query(
+            `SELECT id_livre, livrcode
+             FROM livrenum
+             WHERE livrcode LIKE ?
+             ORDER BY (livrcode LIKE ?) DESC, livrcode ASC
+             LIMIT 20`,
+            [`%${search}%`, `${search}%`],
+            (error, result) => {
             if (error) {
                 reject(error);
             } else {
                 resolve(result);
             }
-        });
+            }
+        );
     });
 }
 

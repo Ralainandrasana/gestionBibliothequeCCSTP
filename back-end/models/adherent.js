@@ -97,14 +97,23 @@ class AdherentModel {
 
     static async getAutoCompleteAdherents(query) {//hello
         return new Promise((resolve, reject) => {
-            // Utiliser le bon format pour LIKE
-            db.query("SELECT * FROM adherent_tri WHERE trix LIKE ?", [`%${query}%`], (error, result) => {
+            const search = String(query || '').trim().slice(0, 100);
+            if (!search) return resolve([]);
+            db.query(
+                `SELECT id_adh, trix
+                 FROM adherent_tri
+                 WHERE trix LIKE ?
+                 ORDER BY (trix LIKE ?) DESC, trix ASC
+                 LIMIT 20`,
+                [`%${search}%`, `${search}%`],
+                (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve(result);
                 }
-            });
+                }
+            );
         });
     }
 

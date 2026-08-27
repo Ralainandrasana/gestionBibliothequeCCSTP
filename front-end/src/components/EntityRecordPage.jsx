@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Avatar,
   Button,
@@ -47,6 +47,10 @@ function EntityRecordPage({ entity, mode }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dynamicOptions, setDynamicOptions] = useState({});
+  const [remoteLoading, setRemoteLoading] = useState({});
+  const remoteTimersRef = useRef({});
+  const remoteControllersRef = useRef({});
+  const remoteExclusionsRef = useRef({});
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const canEdit = hasAnyRole(user, config.editRoles);
 
@@ -69,31 +73,29 @@ function EntityRecordPage({ entity, mode }) {
 
         setRecord(foundRecord);
 
-        const remoteFields = editableFields.filter((field) => field.type === 'remoteSelect');
-        const remoteResponses = await Promise.all(
-          remoteFields.map((field) => axios.get(field.sourceEndpoint))
-        );
+        const remoteFields = mode === 'edit'
+          ? editableFields.filter((field) => field.type === 'remoteSelect')
+          : [];
         const nextDynamicOptions = {};
+        remoteExclusionsRef.current = {};
 
-        for (const [index, field] of remoteFields.entries()) {
-          let sourceRecords = remoteResponses[index].data;
+        for (const field of remoteFields) {
+          const currentValue = foundRecord[field.name];
+          nextDynamicOptions[field.name] = currentValue === null || currentValue === undefined
+            ? []
+            : [{
+                value: String(currentValue),
+                label: field.currentLabel(foundRecord),
+              }];
 
           if (field.excludeAttachedPerson) {
             const exclusionResponse = await axios.get(field.exclusionsEndpoint, {
               params: { excludeAdherentId: id },
             });
-            const attachedToAnotherAdherent = new Set(
+            remoteExclusionsRef.current[field.name] = new Set(
               exclusionResponse.data.map((personId) => String(personId))
             );
-            sourceRecords = sourceRecords.filter(
-              (personne) => !attachedToAnotherAdherent.has(String(personne[field.sourceValue]))
-            );
           }
-
-          nextDynamicOptions[field.name] = sourceRecords.map((sourceRecord) => ({
-            value: String(sourceRecord[field.sourceValue]),
-            label: field.sourceLabel(sourceRecord),
-          }));
         }
         setDynamicOptions(nextDynamicOptions);
 
@@ -124,6 +126,74 @@ function EntityRecordPage({ entity, mode }) {
 
     fetchRecord();
   }, [config, editableFields, form, id, mode]);
+
+  useEffect(() => () => {
+    Object.values(remoteTimersRef.current).forEach(clearTimeout);
+    const activeControllers = Object.values(remoteControllersRef.current);
+    remoteTimersRef.current = {};
+    remoteControllersRef.current = {};
+    activeControllers.forEach((controller) => controller.abort());
+  }, []);
+
+  const handleRemoteSearch = (field, rawQuery) => {
+    const fieldName = field.name;
+    const query = String(rawQuery || '').trim();
+    clearTimeout(remoteTimersRef.current[fieldName]);
+    const previousController = remoteControllersRef.current[fieldName];
+    delete remoteControllersRef.current[fieldName];
+    previousController?.abort();
+
+    const currentValue = form.getFieldValue(fieldName);
+    const currentOption = (dynamicOptions[fieldName] || []).find(
+      (option) => String(option.value) === String(currentValue)
+    );
+
+    if (!query) {
+      setDynamicOptions((previous) => ({
+        ...previous,
+        [fieldName]: currentOption ? [currentOption] : [],
+      }));
+      setRemoteLoading((previous) => ({ ...previous, [fieldName]: false }));
+      return;
+    }
+
+    setRemoteLoading((previous) => ({ ...previous, [fieldName]: true }));
+    remoteTimersRef.current[fieldName] = setTimeout(async () => {
+      const controller = new AbortController();
+      remoteControllersRef.current[fieldName] = controller;
+
+      try {
+        const response = await axios.get(field.searchEndpoint, {
+          params: { search: query },
+          signal: controller.signal,
+        });
+        const excludedValues = remoteExclusionsRef.current[fieldName] || new Set();
+        const nextOptions = (Array.isArray(response.data) ? response.data : [])
+          .filter((item) => !excludedValues.has(String(item[field.searchValue])))
+          .map((item) => ({
+            value: String(item[field.searchValue]),
+            label: item[field.searchLabel],
+          }));
+
+        if (currentOption && !nextOptions.some(
+          (option) => String(option.value) === String(currentOption.value)
+        )) {
+          nextOptions.unshift(currentOption);
+        }
+
+        setDynamicOptions((previous) => ({ ...previous, [fieldName]: nextOptions }));
+      } catch (error) {
+        if (!axios.isCancel(error) && error.code !== 'ERR_CANCELED') {
+          message.error(`Impossible de rechercher ${field.label.toLowerCase()}.`);
+        }
+      } finally {
+        if (remoteControllersRef.current[fieldName] === controller) {
+          delete remoteControllersRef.current[fieldName];
+          setRemoteLoading((previous) => ({ ...previous, [fieldName]: false }));
+        }
+      }
+    }, 300);
+  };
 
   const viewPath = `${config.recordPath}/view/${id}`;
   const editPath = `${config.recordPath}/edit/${id}`;
@@ -175,8 +245,12 @@ function EntityRecordPage({ entity, mode }) {
       return (
         <Select
           showSearch
-          optionFilterProp="label"
+          allowClear
+          filterOption={false}
+          optionLabelProp="label"
           options={dynamicOptions[field.name] || []}
+          loading={Boolean(remoteLoading[field.name])}
+          onSearch={(query) => handleRemoteSearch(field, query)}
           placeholder="Tapez pour rechercher..."
           notFoundContent="Aucun résultat"
         />

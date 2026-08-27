@@ -1,9 +1,9 @@
 import { Button, Form, DatePicker, Select, message } from 'antd';
 import { RightOutlined, HomeOutlined } from '@ant-design/icons';
-import React, { useState } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import useDebouncedRemoteOptions from '../hooks/useDebouncedRemoteOptions';
 
 const onFinish = async (values, navigate) => {
   const formData = new FormData();
@@ -40,7 +40,15 @@ const onFinishFailed = (errorInfo) => {
 
 function AjoutPersonne() {
   const navigate = useNavigate(); // Initialize navigate
-  const [options, setOptions] = useState([]);
+  const {
+    options,
+    loading: suggestionsLoading,
+    search: fetchMatriculeSuggestions,
+  } = useDebouncedRemoteOptions({
+    endpoint: '/api/other/autoCompletePersonnes',
+    valueKey: 'id',
+    labelKey: 'tri',
+  });
   const [form] = Form.useForm(); // Utilisez l'instance form
   const today = dayjs();
   const oneYearLater = today.add(1, "year");
@@ -52,25 +60,6 @@ function AjoutPersonne() {
     }
   }
 
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchMatriculeSuggestions = async (query) => {
-    if (query) {
-      try {
-        const response = await axios.get(`/api/other/autoCompletePersonnes?search=${query}`);
-        
-        // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-        const matricules = response.data.map((personne) => ({
-          label: personne.tri, // Utilisé pour l'affichage
-          value: personne.id,  // Utilisé pour le stockage
-        }));
-        setOptions(matricules);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des suggestions :", error);
-      }
-    } else {
-      setOptions([]); // Réinitialise les options si le champ est vide
-    }
-  };
 
   return (
     <div className='component'>
@@ -143,6 +132,7 @@ function AjoutPersonne() {
               filterOption={false}
               optionLabelProp="label"
               options={options}
+              loading={suggestionsLoading}
               onSearch={fetchMatriculeSuggestions} // Appelé lors de la saisie
               placeholder="Tapez pour rechercher..."
             />

@@ -36,7 +36,6 @@ class LivreController {
     static async getAutoCompleteLivres(req, res) {
         try {
             const results = await livreModel.getAutoCompleteLivres(req.query.search);
-            console.log(req.query.search)
             res.json(results);
         } catch (error) {
             res.status(500).send('Error retrieving Livres');

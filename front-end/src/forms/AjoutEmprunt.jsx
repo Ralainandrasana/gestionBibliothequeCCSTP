@@ -1,9 +1,10 @@
 import { Button, Form, DatePicker, Select, message } from 'antd';
 import { RightOutlined, HomeOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import useDebouncedRemoteOptions from '../hooks/useDebouncedRemoteOptions';
 
 const onFinish = async (values, navigate) => {
   const formData = new FormData();
@@ -16,11 +17,6 @@ const onFinish = async (values, navigate) => {
       formData.append(key, values[key]);
     }
   });
-  for (let [key, value] of formData.entries()) {
-    //console.log(`${key}: ${value}`);
-  }
-  
-
   try {
     const response = await axios.post('/api/crud/livre_emprunts', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -70,8 +66,24 @@ const getAdherentRestrictionMessage = (restriction) => {
 
 function AjoutPersonne() {
   const navigate = useNavigate(); // Initialize navigate
-  const [optionsAdh, setOptionsAdh] = useState([]);
-  const [optionsLiv, setOptionsLiv] = useState([]);
+  const {
+    options: optionsAdh,
+    loading: adherentsLoading,
+    search: fetchAdherentSuggestions,
+  } = useDebouncedRemoteOptions({
+    endpoint: '/api/other/autoCompleteAdherents',
+    valueKey: 'id_adh',
+    labelKey: 'trix',
+  });
+  const {
+    options: optionsLiv,
+    loading: livresLoading,
+    search: fetchLivreSuggestions,
+  } = useDebouncedRemoteOptions({
+    endpoint: '/api/other/autoCompleteLivres',
+    valueKey: 'id_livre',
+    labelKey: 'livrcode',
+  });
   const [form] = Form.useForm(); // Utilisez l'instance form
   //const today = moment();
   const today = dayjs();
@@ -116,47 +128,6 @@ const handleDateChange = (date) =>{
     }
   }
 
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchAdherentSuggestions = async (query) => {
-    if (query) {
-      try {
-        
-        const response = await axios.get(`/api/other/autoCompleteAdherents?search=${query}`);
-        
-        // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-        const adherents = response.data.map((adherent) => ({
-          label: adherent.trix, // Utilisé pour l'affichage
-          value: adherent.id_adh,  // Utilisé pour le stockage
-        }));
-        setOptionsAdh(adherents);
-        console.log(adherents);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des suggestions :", error);
-      }
-    } else {
-      setOptionsAdh([]); // Réinitialise les options si le champ est vide
-    }
-  };
-
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchLivreSuggestions = async (query) => {
-    if (query) {
-      try {
-        const response = await axios.get(`/api/other/autoCompleteLivres?search=${query}`);
-        
-        // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-        const livres = response.data.map((livre) => ({
-          label: livre.livrcode, // Utilisé pour l'affichage
-          value: livre.id_livre,  // Utilisé pour le stockage
-        }));
-        setOptionsLiv(livres);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des suggestions :", error);
-      }
-    } else {
-      setOptionsLiv([]); // Réinitialise les options si le champ est vide
-    }
-  };
 
   return (
     <div className='component'>
@@ -229,6 +200,7 @@ const handleDateChange = (date) =>{
               filterOption={false}
               optionLabelProp="label"
               options={optionsAdh}
+              loading={adherentsLoading}
               onSearch={fetchAdherentSuggestions} // Appelé lors de la saisie
               placeholder="Tapez pour rechercher..."
             />
@@ -258,6 +230,7 @@ const handleDateChange = (date) =>{
               filterOption={false}
               optionLabelProp="label"
               options={optionsLiv}
+              loading={livresLoading}
               onSearch={fetchLivreSuggestions} // Appelé lors de la saisie
               placeholder="Tapez pour rechercher..."
             />
