@@ -31,7 +31,7 @@ function TableHistoriqueSysteme() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:3000/api/crud/app_logs', {
+        const response = await axios.get('/api/crud/app_logs', {
           signal: controller.signal,
           params: {
             page: pagination.current,

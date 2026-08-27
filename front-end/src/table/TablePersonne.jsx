@@ -18,7 +18,7 @@ function TablePersonne() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/personnes'
+    '/api/crud/personnes'
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [avatarLoading, setAvatarLoading] = useState({}); // Suivre le chargement des avatars
@@ -38,7 +38,7 @@ function TablePersonne() {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await axios.delete(`http://localhost:3000/api/crud/personnes/${id}`);
+          await axios.delete(`/api/crud/personnes/${id}`);
           message.success('Personne supprimée avec succès.');
           setData((prevData) => prevData.filter((personne) => personne.id !== id));
         } catch (error) {
@@ -62,7 +62,7 @@ function TablePersonne() {
       onOk: async () => {
         try {
           await Promise.all(
-            selectedRowKeys.map((id) => axios.delete(`http://localhost:3000/api/crud/personnes/${id}`))
+            selectedRowKeys.map((id) => axios.delete(`/api/crud/personnes/${id}`))
           );
           message.success('Personnes supprimées avec succès.');
           setData((currentData) => currentData.filter((personne) => !selectedRowKeys.includes(personne.id)));

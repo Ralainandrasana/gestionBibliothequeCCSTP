@@ -25,7 +25,7 @@ function TableAdherent() {
 
   const [validityFilter, setValidityFilter] = useState('');
   const { data, loading, setSearchTerm, pagination, handleTableChange, refresh } = usePaginatedTable(
-    'http://localhost:3000/api/crud/adherents',
+    '/api/crud/adherents',
     {
       extraParams: { validity: validityFilter },
       transformData: adherent => ({
@@ -52,7 +52,7 @@ function TableAdherent() {
 
   const handleDelete = async (ids) => {
     try {
-      await Promise.all(ids.map(id => axios.delete(`http://localhost:3000/api/crud/adherents/${id}`)));
+      await Promise.all(ids.map(id => axios.delete(`/api/crud/adherents/${id}`)));
       message.success("Adhérents supprimés avec succès");
       refresh();
       setSelectedRowKeys([]);

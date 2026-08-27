@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -12,6 +14,7 @@ const decodeHtmlEntitiesResponse = require('./middleware/decodeHtmlEntitiesRespo
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const frontendDistPath = path.resolve(__dirname, '../front-end/dist');
 
 // ✅ CONFIGURATION CORS CORRECTE
 app.use(cors({
@@ -35,7 +38,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    // HTTP local : cookie utilisable. HTTPS : attribut Secure automatique.
+    secure: 'auto',
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000,
     sameSite: 'lax'
@@ -50,6 +54,31 @@ app.use(auditMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/crud', crudRout); // Utilisation de routes avec point de montage
 app.use('/api/other', otherRout);
+
+// Une route API inconnue ne doit jamais recevoir le index.html de React.
+app.use('/api', (req, res) => {
+  res.status(404).json({ message: 'Route API introuvable.' });
+});
+
+// En production, Express sert directement le build Vite.
+if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath, {
+    index: false,
+    setHeaders: (res, filePath) => {
+      if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+    }
+  }));
+
+  // Fallback requis pour les routes gerees par React Router.
+  app.get('*', (req, res) => {
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else if (process.env.NODE_ENV === 'production') {
+  console.warn(`Build React introuvable dans ${frontendDistPath}. Lancez npm run build dans front-end.`);
+}
 
 app.listen(PORT, () => {
   console.log(`🚀 Serveur démarré sur le port ${PORT}`);

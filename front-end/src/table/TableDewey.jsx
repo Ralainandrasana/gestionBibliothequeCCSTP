@@ -14,7 +14,7 @@ function Catalogue() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:3000/api/crud/Deweys');
+      const response = await axios.get('/api/crud/Deweys');
       setData(response.data);
       setFilteredData(response.data);
     } catch (error) {

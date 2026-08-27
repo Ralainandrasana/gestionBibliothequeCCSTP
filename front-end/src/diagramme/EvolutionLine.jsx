@@ -9,7 +9,7 @@ function EvolutionLine() {
 
   const fetchEffectifInscription = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/other/evolutionInscription');
+      const response = await axios.get('/api/other/evolutionInscription');
       setEffectifInscriptionParMois(response.data);
     console.log(response.data);
 

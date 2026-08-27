@@ -21,7 +21,7 @@ function TableEmpruntNonRendu() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/livre_emprunts_non_rendu'
+    '/api/crud/livre_emprunts_non_rendu'
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]); // Pour gérer la sélection multiple
 
@@ -41,14 +41,14 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
     onOk: async () => {
       try {
         if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
-          await axios.put(`http://localhost:3000/api/other/adherent/avertir/${id_adh}`);
+          await axios.put(`/api/other/adherent/avertir/${id_adh}`);
           notification.warning({
             message: "Adhérent Averti",
             description: "car la date de retour est en retard",
             duration: 10, // Durée en secondes (0 pour une notification permanente)
           });
         }
-        const response = await axios.put(`http://localhost:3000/api/other/livre_emprunts/renouveler/${id}`);
+        const response = await axios.put(`/api/other/livre_emprunts/renouveler/${id}`);
         message.success(response.data?.message || 'Emprunt renouvelé avec succès.');
         setData((prevData) =>
           prevData.map((item) =>
@@ -99,9 +99,9 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
           cancelText: 'Non, conserver l’emprunt',
           onOk: async () => {
             try {
-              await axios.put(`http://localhost:3000/api/other/livre_emprunts/rendre/${id}`);
-              await axios.put(`http://localhost:3000/api/other/adherent/rendre/${id_adh}`);
-              await axios.put(`http://localhost:3000/api/other/livre/rendre/${id_livre}`);
+              await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
+              await axios.put(`/api/other/adherent/rendre/${id_adh}`);
+              await axios.put(`/api/other/livre/rendre/${id_livre}`);
               setData((prevData) => prevData.filter((emprunt) => emprunt.id !== id));
               message.success('Retour du livre enregistré avec succès.');
             } catch (returnError) {
@@ -127,14 +127,14 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
     cancelText: 'Non',
     onOk: async () => {
       try {
-        await axios.put(`http://localhost:3000/api/other/livre_emprunts/rendre/${id}`);
-        await axios.put(`http://localhost:3000/api/other/adherent/rendre/${id_adh}`);
-        await axios.put(`http://localhost:3000/api/other/livre/rendre/${id_livre}`);
+        await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
+        await axios.put(`/api/other/adherent/rendre/${id_adh}`);
+        await axios.put(`/api/other/livre/rendre/${id_livre}`);
         if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
-          await axios.put(`http://localhost:3000/api/other/adherent/avertir/${id_adh}`);
+          await axios.put(`/api/other/adherent/avertir/${id_adh}`);
 
           //recuperation nombre d'avertissement
-          // const response = await axios.get(`http://localhost:3000/api/other/adherent/search/${id_adh}`);
+          // const response = await axios.get(`/api/other/adherent/search/${id_adh}`);
           // setAdherantAverti(response.data);
           // const nbrAvert = adherantAverti[0].penaliser;
 
@@ -166,7 +166,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await axios.delete(`http://localhost:3000/api/crud/livre_emprunts/${id}`);
+          await axios.delete(`/api/crud/livre_emprunts/${id}`);
           message.success('Emprunt supprimée avec succès.');
           setData((prevData) => prevData.filter((personne) => personne.id !== id));
         } catch (error) {
@@ -191,7 +191,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
       onOk: async () => {
         try {
           await Promise.all(
-            selectedRowKeys.map((id) => axios.delete(`http://localhost:3000/api/crud/livre_emprunts/${id}`))
+            selectedRowKeys.map((id) => axios.delete(`/api/crud/livre_emprunts/${id}`))
           );
           message.success('Emprunts supprimés avec succès.');
           setData((prevData) => prevData.filter((personne) => !selectedRowKeys.includes(personne.id)));

@@ -10,7 +10,7 @@ function DiagrammeCirculaire() {
   // Fonction pour récupérer les données
   const fetchEffectifLivre = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/other/effectifLivreParType');
+      const response = await axios.get('/api/other/effectifLivreParType');
       setEffectifLivreParType(response.data);
     } catch (error) {
       console.error('Erreur lors du fetch des données :', error);
@@ -19,7 +19,7 @@ function DiagrammeCirculaire() {
 
   const fetchEffectifAdherent = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/other/effectifAdherentParCategorie');
+      const response = await axios.get('/api/other/effectifAdherentParCategorie');
       setEffectifAdherentParCategorie(response.data);
     } catch (error) {
       console.error('Erreur lors du fetch des données :', error);

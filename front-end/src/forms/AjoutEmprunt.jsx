@@ -22,7 +22,7 @@ const onFinish = async (values, navigate) => {
   
 
   try {
-    const response = await axios.post('http://localhost:3000/api/crud/livre_emprunts', formData, {
+    const response = await axios.post('/api/crud/livre_emprunts', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Formulaire soumis avec succès :', response.data);
@@ -84,7 +84,7 @@ function AjoutPersonne() {
   // Fonction pour rechercher les matricules depuis la base de données
   const fetchAdherentsInvalides = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/other/empruntInvalide`);
+        const response = await axios.get(`/api/other/empruntInvalide`);
         setAdherentsInvalides(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error("Erreur lors de la récupération des restrictions des adhérents :", error);
@@ -94,7 +94,7 @@ function AjoutPersonne() {
   // Fonction pour rechercher les matricules depuis la base de données
   const fetchLivreNonDispo = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/other/livresNonDispo`);
+      const response = await axios.get(`/api/other/livresNonDispo`);
       
       // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
       const idLivres = response.data.map(item => item.id_livre);
@@ -121,7 +121,7 @@ const handleDateChange = (date) =>{
     if (query) {
       try {
         
-        const response = await axios.get(`http://localhost:3000/api/other/autoCompleteAdherents?search=${query}`);
+        const response = await axios.get(`/api/other/autoCompleteAdherents?search=${query}`);
         
         // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
         const adherents = response.data.map((adherent) => ({
@@ -142,7 +142,7 @@ const handleDateChange = (date) =>{
   const fetchLivreSuggestions = async (query) => {
     if (query) {
       try {
-        const response = await axios.get(`http://localhost:3000/api/other/autoCompleteLivres?search=${query}`);
+        const response = await axios.get(`/api/other/autoCompleteLivres?search=${query}`);
         
         // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
         const livres = response.data.map((livre) => ({

@@ -11,7 +11,7 @@ function Effectif() {
       // Fonction pour récupérer les données
   const fetchEffectifLivre = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/other/effectifTotalLivre');
+      const response = await axios.get('/api/other/effectifTotalLivre');
       setEffectifLivre(response.data[0].effectifLivre);
     } catch (error) {
       console.error('Erreur lors du fetch des données :', error);
@@ -20,7 +20,7 @@ function Effectif() {
 
   const fetchEffectifAdherent = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/api/other/effectifTotalAdherent');
+      const response = await axios.get('/api/other/effectifTotalAdherent');
       setEffectifAdherent(response.data[0].effectifAdherent);
     } catch (error) {
       console.error('Erreur lors du fetch des données :', error);

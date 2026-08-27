@@ -26,7 +26,7 @@ const onFinish = async (values, navigate) => {
   });
 
   try {
-    const response = await axios.post('http://localhost:3000/api/crud/personnes', formData, {
+    const response = await axios.post('/api/crud/personnes', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Formulaire soumis avec succès :', response.data);
@@ -52,7 +52,7 @@ function AjoutPersonne() {
   // Fonction pour rechercher les matricules depuis la base de données
   const fetchMatricule = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/other/matricule`);
+        const response = await axios.get(`/api/other/matricule`);
         
         // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
         const matricules = response.data.map(item => item.code);

@@ -19,7 +19,7 @@ const onFinish = async (values, navigate) => {
   });
 
   try {
-    const response = await axios.post('http://localhost:3000/api/crud/livres', formData, {
+    const response = await axios.post('/api/crud/livres', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Formulaire soumis avec succès :', response.data);

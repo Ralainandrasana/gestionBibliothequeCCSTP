@@ -10,7 +10,7 @@ const { Column } = Table;
 
 function TablePersonne() {
   const { data, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/livre_emprunts_recent'
+    '/api/crud/livre_emprunts_recent'
   );
   
 

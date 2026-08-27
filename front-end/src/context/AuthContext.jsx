@@ -6,7 +6,7 @@ const AuthContext = createContext();
 
 // Configuration d'Axios - CORRECTION
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: '/api',
   withCredentials: true
 });
 

@@ -30,7 +30,7 @@ function AjoutUtilisateur() {
 
     setSubmitting(true);
     try {
-      await axios.post('http://localhost:3000/api/crud/register', formData);
+      await axios.post('/api/crud/register', formData);
       message.success('Utilisateur ajouté avec succès !');
       navigate('/Parametre/Administrateur/User');
     } catch (error) {

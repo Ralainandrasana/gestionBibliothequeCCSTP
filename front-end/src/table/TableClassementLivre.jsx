@@ -7,7 +7,7 @@ const { Column } = Table;
 
 function Catalogue() {
   const { data, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/other/classementLivres'
+    '/api/other/classementLivres'
   );
 
   return (

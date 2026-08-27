@@ -34,7 +34,7 @@ function TablePersonne() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const { data, setData, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/users'
+    '/api/crud/users'
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [avatarLoading, setAvatarLoading] = useState({}); // Suivre le chargement des avatars
@@ -54,7 +54,7 @@ function TablePersonne() {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await axios.delete(`http://localhost:3000/api/crud/users/${id}`);
+          await axios.delete(`/api/crud/users/${id}`);
           message.success('Personne supprimée avec succès.');
           setData((prevData) => prevData.filter((personne) => personne.id !== id));
         } catch (error) {
@@ -78,7 +78,7 @@ function TablePersonne() {
       onOk: async () => {
         try {
           await Promise.all(
-            selectedRowKeys.map((id) => axios.delete(`http://localhost:3000/api/crud/users/${id}`))
+            selectedRowKeys.map((id) => axios.delete(`/api/crud/users/${id}`))
           );
           message.success('Utilisateurs supprimés avec succès.');
           setData((currentData) => currentData.filter((currentUser) => !selectedRowKeys.includes(currentUser.id)));
@@ -101,7 +101,7 @@ function TablePersonne() {
 
   const handleRoleChange = async (id, roles) => {
     try {
-      await axios.put(`http://localhost:3000/api/auth/admin/users/${id}/role`, { roles });
+      await axios.put(`/api/auth/admin/users/${id}/role`, { roles });
       updateLocalUser(id, { roles });
       message.success('Rôle utilisateur mis à jour.');
     } catch (error) {
@@ -111,7 +111,7 @@ function TablePersonne() {
 
   const handleStatusChange = async (id, account_status) => {
     try {
-      await axios.put(`http://localhost:3000/api/auth/admin/users/${id}/status`, { account_status });
+      await axios.put(`/api/auth/admin/users/${id}/status`, { account_status });
       updateLocalUser(id, { account_status });
       message.success('Statut du compte mis à jour.');
     } catch (error) {

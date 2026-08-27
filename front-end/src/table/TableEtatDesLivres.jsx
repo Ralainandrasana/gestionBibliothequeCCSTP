@@ -16,7 +16,7 @@ function TableEtatDesLivres() {
   const { user } = useAuth();
   const isAdmin = hasAnyRole(user, [ROLES.ADMIN]);
   const { data, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/livres'
+    '/api/crud/livres'
   );
 
   const navigate = useNavigate();

@@ -22,7 +22,7 @@ const onFinish = async (values, navigate) => {
   
 
   try {
-    const response = await axios.post('http://localhost:3000/api/crud/adherents', formData, {
+    const response = await axios.post('/api/crud/adherents', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     console.log('Formulaire soumis avec succès :', response.data);//ji
@@ -56,7 +56,7 @@ function AjoutPersonne() {
   const fetchMatriculeSuggestions = async (query) => {
     if (query) {
       try {
-        const response = await axios.get(`http://localhost:3000/api/other/autoCompletePersonnes?search=${query}`);
+        const response = await axios.get(`/api/other/autoCompletePersonnes?search=${query}`);
         
         // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
         const matricules = response.data.map((personne) => ({

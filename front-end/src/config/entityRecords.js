@@ -1,6 +1,6 @@
 import { ROLES, STAFF_ROLES } from './accessControl';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 const roleOptions = [
   { value: ROLES.ADMIN, label: 'Administrator' },

@@ -8,6 +8,8 @@ function normalizeBoolean(value) {
         || String(value).toLowerCase() === 'true';
 }
 
+const CLASSEMENT_ADHERENTS_SQL = "SELECT ROW_NUMBER() OVER(ORDER BY COUNT(code_pers) DESC) AS rang, code, nom, prenom, categorie, count(code_pers) as nombreEmpruntEffectue FROM `livre_emprunt` le left join (`adherent` a left join `personne` p on a.id_pers = p.id) on le.code_pers = a.id_adh where id_adh is not null and (le.date_emprunt <= '2024-12-31' and le.date_emprunt >= '2024-01-01') group by code_pers order by nombreEmpruntEffectue desc";
+
 class AdherentModel {
     // READ
     static async getAdherents(pagination = null) {
@@ -121,7 +123,7 @@ class AdherentModel {
     }
 
     static async getClassementAdherents(pagination = null) {
-        const baseSql = "SELECT ROW_NUMBER() OVER(ORDER BY COUNT(code_pers) DESC) AS rang, code, nom, prenom, categorie, count(code_pers) as nombreEmpruntEffectue FROM `livre_emprunt` le left join (`adherent` a left join `personne` p on a.id_pers = p.id) on le.code_pers = a.id_adh where id_adh is not null and (le.date_emprunt <= '2024-12-31' and le.date_emprunt >= '2024-01-01') group by code_pers order by nombreEmpruntEffectue desc";
+        const baseSql = CLASSEMENT_ADHERENTS_SQL;
         if (pagination) {
             return runPaginatedQuery({
                 baseSql,

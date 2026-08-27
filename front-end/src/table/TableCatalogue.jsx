@@ -9,7 +9,7 @@ const { Column } = Table;
 function Catalogue() {
   const [serverFilters, setServerFilters] = useState({});
   const { data, loading, setSearchTerm, pagination, handleTableChange } = usePaginatedTable(
-    'http://localhost:3000/api/crud/livres',
+    '/api/crud/livres',
     {
       extraParams: {
         type: (serverFilters.Type || []).join(','),
