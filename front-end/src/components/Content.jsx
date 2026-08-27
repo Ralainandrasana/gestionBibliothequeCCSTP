@@ -1,27 +1,30 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Personne from './Personne';
-import Dashboard from './Dashboard';
-import Adherent from './Adherent';
-import AjoutPersonne from '../forms/ajoutPersonne';
-import AjoutAdherent from '../forms/AjoutAdherent';
-import AjoutEmprunt from '../forms/AjoutEmprunt';
-import AjoutLivre from '../forms/AjoutLivre';
-import EmpruntRendu from './EmpruntRendu';
-import EmpruntNonRendu from './EmpruntNonRendu';
-import EtatDesLivres from './EtatDesLivres';
-import Catalogue from './Catalogue';
-import HistoriqueSysteme from './HistoriqueSysteme';
-import Dewey from './Dewey';
-import User from './User';
-import ClassementAdherant from './ClassementAdherant';
-import ClassementLivre from './ClassementLivre';
-import AjoutUtilisateur from '../forms/AjoutUtilisateur';
 import ProtectedRoute from './ProtectedRoute';
-import Unauthorized from './Unauthorized';
-import EntityRecordPage from './EntityRecordPage';
-import Profile from './Profile';
-import ComingSoon from './ComingSoon';
+import PageLoader from './PageLoader';
 import { ALL_ROLES, CATALOGUE_ROLES, ROLES, STAFF_ROLES } from '../config/accessControl';
+
+const Personne = lazy(() => import('./Personne'));
+const Dashboard = lazy(() => import('./Dashboard'));
+const Adherent = lazy(() => import('./Adherent'));
+const AjoutPersonne = lazy(() => import('../forms/ajoutPersonne'));
+const AjoutAdherent = lazy(() => import('../forms/AjoutAdherent'));
+const AjoutEmprunt = lazy(() => import('../forms/AjoutEmprunt'));
+const AjoutLivre = lazy(() => import('../forms/AjoutLivre'));
+const EmpruntRendu = lazy(() => import('./EmpruntRendu'));
+const EmpruntNonRendu = lazy(() => import('./EmpruntNonRendu'));
+const EtatDesLivres = lazy(() => import('./EtatDesLivres'));
+const Catalogue = lazy(() => import('./Catalogue'));
+const HistoriqueSysteme = lazy(() => import('./HistoriqueSysteme'));
+const Dewey = lazy(() => import('./Dewey'));
+const User = lazy(() => import('./User'));
+const ClassementAdherant = lazy(() => import('./ClassementAdherant'));
+const ClassementLivre = lazy(() => import('./ClassementLivre'));
+const AjoutUtilisateur = lazy(() => import('../forms/AjoutUtilisateur'));
+const Unauthorized = lazy(() => import('./Unauthorized'));
+const EntityRecordPage = lazy(() => import('./EntityRecordPage'));
+const Profile = lazy(() => import('./Profile'));
+const ComingSoon = lazy(() => import('./ComingSoon'));
 
 const withRoles = (element, roles) => (
   <ProtectedRoute roles={roles}>{element}</ProtectedRoute>
@@ -30,7 +33,8 @@ const withRoles = (element, roles) => (
 function Content() {
   return (
     <div style={{ width: "80%", padding: '20px', overflow: 'auto' }} className='content'>
-      <Routes>
+      <Suspense fallback={<PageLoader contained message="Chargement de la page" />}>
+        <Routes>
         {/* Dashboard */}
         <Route path="/dashboard" element={withRoles(<Dashboard />, ALL_ROLES)} />
         <Route path="/profil" element={withRoles(<Profile />, ALL_ROLES)} />
@@ -103,7 +107,8 @@ function Content() {
         
         {/* Fallback - si aucune route ne correspond */}
         <Route path="*" element={<Navigate to="/unauthorized" replace />} />
-      </Routes>
+        </Routes>
+      </Suspense>
     </div>
   );
 }

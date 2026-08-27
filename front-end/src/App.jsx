@@ -1,16 +1,18 @@
-import React from 'react';
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Login from './components/Login';
-import Register from './components/Register';
-import SideMenu from './components/SideMenu';
-import Content from './components/Content';
-import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
+import PageLoader from './components/PageLoader';
 import './App.css';
 
+const Login = lazy(() => import('./components/Login'));
+const Register = lazy(() => import('./components/Register'));
+const SideMenu = lazy(() => import('./components/SideMenu'));
+const Content = lazy(() => import('./components/Content'));
+const Header = lazy(() => import('./components/Header'));
+
 function AppLayout() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
     <>
@@ -27,19 +29,21 @@ function App() {
   return (
     <AuthProvider>
       <div className="App" style={{ minHeight: '100vh', width: '100%' }}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route 
-            path="/*" 
-            element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            } 
-          />
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
+        <Suspense fallback={<PageLoader message="Chargement de la page" />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route 
+              path="/*" 
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Suspense>
       </div>
     </AuthProvider>
   );
