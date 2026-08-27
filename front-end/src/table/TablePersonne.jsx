@@ -3,13 +3,11 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, UserOutlined } from '@ant-de
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import usePaginatedTable from '../hooks/usePaginatedTable';
-import 'moment/locale/fr';
-moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;
@@ -141,7 +139,7 @@ function TablePersonne() {
             title="Date de Naissance" 
             dataIndex="date_nais"
             key="date_nais" 
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column
             title="Action"

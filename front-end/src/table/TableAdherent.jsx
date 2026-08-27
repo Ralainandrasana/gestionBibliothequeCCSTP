@@ -3,13 +3,11 @@ import axios from 'axios';
 import { Table, Space, Tag, message, Modal, Button, Input } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import moment from 'moment';
-import 'moment/locale/fr';
+import dayjs from 'dayjs';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import usePaginatedTable from '../hooks/usePaginatedTable';
-moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;
@@ -31,7 +29,7 @@ function TableAdherent() {
       transformData: adherent => ({
         ...adherent,
         key: adherent.id_adh,
-        validite: moment(adherent.date_fin).isAfter(moment()) ? 'Valide' : 'Invalide'
+        validite: dayjs(adherent.date_fin).isAfter(dayjs()) ? 'Valide' : 'Invalide'
       })
     }
   );
@@ -111,13 +109,13 @@ function TableAdherent() {
             title="Date readhesion"
             dataIndex="date_reinscription"
             key="dateReadhesion"
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column
             title="Fin readhesion"
             dataIndex="date_fin"
             key="finReadhesion"
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column
             title="Validité"
@@ -129,7 +127,7 @@ function TableAdherent() {
               { text: 'Tous', value: 'Tous' },
             ]}
             render={(_, record) => {
-              const isDateExpired = moment(record.date_fin).isBefore(moment());
+              const isDateExpired = dayjs(record.date_fin).isBefore(dayjs());
               return (
                 <Tag color={isDateExpired ? 'red' : 'green'}>
                   {isDateExpired ? 'Invalide' : 'Valide'}

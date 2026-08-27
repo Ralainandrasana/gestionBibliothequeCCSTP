@@ -1,14 +1,11 @@
 import { Table, Input, Space, Button, Tag } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import usePaginatedTable from '../hooks/usePaginatedTable';
-import 'moment/locale/fr';
-
-moment.locale('fr');
 
 const { Column } = Table;
 
@@ -63,7 +60,7 @@ function TableEtatDesLivres() {
             title="date_status" 
             dataIndex="date_status"
             key="date_status" 
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column
             title="Disponible"

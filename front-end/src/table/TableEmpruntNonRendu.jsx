@@ -3,15 +3,12 @@ import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import moment from 'moment';
 import dayjs from 'dayjs';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import usePaginatedTable from '../hooks/usePaginatedTable';
-import 'moment/locale/fr';
 
-moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;
@@ -57,8 +54,8 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
                   ...item,
                   renouvelable: false,
                   date_emprunt_initiale: response.data?.date_emprunt_initiale || item.date_emprunt,
-                  date_emprunt: response.data?.date_emprunt || moment(),
-                  date_retour: response.data?.date_retour || moment().add(14, 'days'),
+                  date_emprunt: response.data?.date_emprunt || dayjs(),
+                  date_retour: response.data?.date_retour || dayjs().add(14, 'days'),
                 }
               : item
           )
@@ -255,24 +252,24 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
             dataIndex="date_emprunt"
             key="date_emprunt" 
             width={110}
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column 
             title="Date Retour" 
             width={110}
             dataIndex="date_retour"
             key="date_retour" 
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column 
             title="Observation" 
             key="observation"
             width={100}
             render={(_, record) => {
-              const isDateOverdue = moment().isAfter(moment(record.date_retour), 'day');
+              const isDateOverdue = dayjs().isAfter(dayjs(record.date_retour), 'day');
               return (
                 <Tag color={isDateOverdue ? 'red' : 'cyan'}>
-                  {isDateOverdue ?  moment().diff(moment(record.date_retour), 'days')+' jrs retard' : moment(record.date_retour).diff(moment(), 'days')+' jrs reste'}
+                  {isDateOverdue ? dayjs().diff(dayjs(record.date_retour), 'days')+' jrs retard' : dayjs(record.date_retour).diff(dayjs(), 'days')+' jrs reste'}
                 </Tag>
               );
             }}

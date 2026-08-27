@@ -3,13 +3,10 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, UserOutlined } from '@ant-de
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import moment from 'moment';
 import height from './height';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, normalizeRole, ROLES } from '../config/accessControl';
 import usePaginatedTable from '../hooks/usePaginatedTable';
-import 'moment/locale/fr';
-moment.locale('fr');
 
 const { Column } = Table;
 const { confirm } = Modal;

@@ -1,8 +1,6 @@
 import { Button, Input, Form, DatePicker, Select, message } from 'antd';
-import { RightOutlined, HomeOutlined, UploadOutlined } from '@ant-design/icons';
-import React from 'react';
+import { RightOutlined, HomeOutlined } from '@ant-design/icons';
 import axios from 'axios';
-import moment from 'moment';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 const onFinish = async (values, navigate) => {

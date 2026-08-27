@@ -1,10 +1,8 @@
 import { Table, Input } from 'antd';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import height from './height';
-import 'moment/locale/fr';
 import usePaginatedTable from '../hooks/usePaginatedTable';
 
-moment.locale('fr');
 
 const { Column } = Table;
 
@@ -43,13 +41,13 @@ function TablePersonne() {
             title="Date Emprunt" 
             dataIndex="date_emprunt"
             key="date_emprunt" 
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
           <Column 
             title="Date Retour" 
             dataIndex="date_retour"
             key="date_retour" 
-            render={(date) => date ? moment(date).format('DD MMM YYYY') : ''}
+            render={(date) => date ? dayjs(date).format('DD MMM YYYY') : ''}
           />
         </Table>
       </div>

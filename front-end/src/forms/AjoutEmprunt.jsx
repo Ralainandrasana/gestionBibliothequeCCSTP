@@ -85,7 +85,6 @@ function AjoutPersonne() {
     labelKey: 'livrcode',
   });
   const [form] = Form.useForm(); // Utilisez l'instance form
-  //const today = moment();
   const today = dayjs();
   const afterFourteenDay = today.add(14, "day");
 

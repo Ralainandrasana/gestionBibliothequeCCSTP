@@ -1,6 +1,5 @@
 import { Table, Input, Space } from 'antd';
 import height from './height';
-import 'moment/locale/fr';
 import usePaginatedTable from '../hooks/usePaginatedTable';
 
 const { Column } = Table;
