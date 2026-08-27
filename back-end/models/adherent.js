@@ -36,7 +36,37 @@ class AdherentModel {
                 }
             });
         });
-    }// READ 
+    }// READ
+
+    static async getAdherentById(id_adh) {
+        return new Promise((resolve, reject) => {
+            db.query(
+                `SELECT *
+                 FROM adherent a
+                 LEFT OUTER JOIN personne p ON a.id_pers = p.id
+                 WHERE a.id_adh = ?
+                 LIMIT 1`,
+                [id_adh],
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result[0] || null);
+                }
+            );
+        });
+    }
+
+    static async getAttachedPersonIds(excludedAdherentId) {
+        return new Promise((resolve, reject) => {
+            db.query(
+                'SELECT id_pers FROM adherent WHERE id_adh <> ? AND id_pers IS NOT NULL',
+                [excludedAdherentId],
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result.map((row) => row.id_pers));
+                }
+            );
+        });
+    }
 
 //emprunt Invalide
     static async getEmpruntInvalide() {

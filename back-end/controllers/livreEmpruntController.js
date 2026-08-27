@@ -59,6 +59,16 @@ class LivreEmpruntController {
     }
 
     // CREATE
+    static async getLivreEmpruntNonRenduById(req, res) {
+        try {
+            const result = await livreEmpruntModel.getLivreEmpruntNonRenduById(req.params.id);
+            if (!result) return res.status(404).json({ message: 'Emprunt non rendu introuvable.' });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "Erreur lors du chargement de l'emprunt." });
+        }
+    }
+
     static async addNewLivreEmprunt(req, res) {
         try {
             const { code_pers, id_livre } = req.body;

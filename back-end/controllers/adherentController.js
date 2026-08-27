@@ -13,6 +13,25 @@ class AdherentController {
         }
     }
     // CREATE
+    static async getAdherentById(req, res) {
+        try {
+            const result = await adherentModel.getAdherentById(req.params.id_adh);
+            if (!result) return res.status(404).json({ message: 'Adhérent introuvable.' });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "Erreur lors du chargement de l'adhérent." });
+        }
+    }
+
+    static async getAttachedPersonIds(req, res) {
+        try {
+            const results = await adherentModel.getAttachedPersonIds(req.query.excludeAdherentId);
+            res.json(results);
+        } catch (error) {
+            res.status(500).json({ message: 'Erreur lors de la vérification des personnes rattachées.' });
+        }
+    }
+
     static async addNewAdherent(req, res) {
         try {
             const existingAdherent = await adherentModel.findByPersonId(req.body.id_pers);

@@ -37,6 +37,16 @@ class LivreModel {
             });
         });
     }
+
+    static async getLivreById(id_livre) {
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM livre WHERE id_livre = ? LIMIT 1', [id_livre], (error, result) => {
+                if (error) reject(error);
+                else resolve(result[0] || null);
+            });
+        });
+    }
+
      // livre non dispo
      static async getLivresNonDispo() {
         return new Promise((resolve, reject) => {

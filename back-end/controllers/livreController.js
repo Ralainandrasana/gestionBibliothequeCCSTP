@@ -13,6 +13,16 @@ class LivreController {
         }
     }
     // READ
+    static async getLivreById(req, res) {
+        try {
+            const result = await livreModel.getLivreById(req.params.id_livre);
+            if (!result) return res.status(404).json({ message: 'Livre introuvable.' });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: 'Erreur lors du chargement du livre.' });
+        }
+    }
+
     static async getAllLivresNonDispo(req, res) {
         try {
             const results = await livreModel.getLivresNonDispo();

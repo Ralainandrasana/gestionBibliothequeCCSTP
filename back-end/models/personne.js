@@ -24,6 +24,15 @@ class PersonneModel {
         });
     }
 
+    static async getPersonneById(id) {
+        return new Promise((resolve, reject) => {
+            db.query('SELECT * FROM personne WHERE id = ? LIMIT 1', [id], (error, result) => {
+                if (error) reject(error);
+                else resolve(result[0] || null);
+            });
+        });
+    }
+
     // CREATE
     static async addPersonne(data) {
         return new Promise((resolve, reject) => {

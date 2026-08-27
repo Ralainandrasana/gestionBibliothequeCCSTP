@@ -14,6 +14,16 @@ class PersonneController {
     }
 
     // READ autocomplete
+    static async getPersonneById(req, res) {
+        try {
+            const result = await personneModel.getPersonneById(req.params.id);
+            if (!result) return res.status(404).json({ message: 'Personne introuvable.' });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: 'Erreur lors du chargement de la personne.' });
+        }
+    }
+
     static async getAutoCompletePersonnes(req, res) {
         try {
             const results = await personneModel.getAutoCompletePersonnes(req.query.search);

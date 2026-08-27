@@ -59,10 +59,8 @@ function EntityRecordPage({ entity, mode }) {
     const fetchRecord = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(config.listEndpoint);
-        const foundRecord = response.data.find(
-          (item) => String(item[config.idField]) === String(id)
-        );
+        const response = await axios.get(config.detailEndpoint(id));
+        const foundRecord = response.data;
 
         if (!foundRecord) {
           setRecord(null);
@@ -77,14 +75,15 @@ function EntityRecordPage({ entity, mode }) {
         );
         const nextDynamicOptions = {};
 
-        remoteFields.forEach((field, index) => {
+        for (const [index, field] of remoteFields.entries()) {
           let sourceRecords = remoteResponses[index].data;
 
           if (field.excludeAttachedPerson) {
+            const exclusionResponse = await axios.get(field.exclusionsEndpoint, {
+              params: { excludeAdherentId: id },
+            });
             const attachedToAnotherAdherent = new Set(
-              response.data
-                .filter((adherent) => String(adherent[config.idField]) !== String(id))
-                .map((adherent) => String(adherent.id_pers))
+              exclusionResponse.data.map((personId) => String(personId))
             );
             sourceRecords = sourceRecords.filter(
               (personne) => !attachedToAnotherAdherent.has(String(personne[field.sourceValue]))
@@ -95,7 +94,7 @@ function EntityRecordPage({ entity, mode }) {
             value: String(sourceRecord[field.sourceValue]),
             label: field.sourceLabel(sourceRecord),
           }));
-        });
+        }
         setDynamicOptions(nextDynamicOptions);
 
         const formValues = {};

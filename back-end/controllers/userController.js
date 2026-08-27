@@ -28,6 +28,16 @@ class UserController {
     }
 
     // CRÉER
+    static async getUserById(req, res) {
+        try {
+            const result = await userModel.getUserById(req.params.id);
+            if (!result) return res.status(404).json({ message: 'Utilisateur introuvable.' });
+            res.json(result);
+        } catch (error) {
+            res.status(500).json({ message: "Erreur lors du chargement de l'utilisateur." });
+        }
+    }
+
     static async addNewUser(req, res) {
         const { nom, pswd, email, roles, account_status, user_role_id } = req.body;
         

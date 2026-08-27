@@ -80,6 +80,27 @@ class LivreEmpruntModel {
         });
     }
 
+    static async getLivreEmpruntNonRenduById(id) {
+        return new Promise((resolve, reject) => {
+            db.query(
+                `SELECT at.id_adh, le.id_livre, le.renouvelable, le.id,
+                        at.trix, ln.livrcode, le.date_emprunt_initiale,
+                        le.date_emprunt, le.date_retour, le.status, le.dateReelRetour
+                 FROM (livre_emprunt le
+                 LEFT OUTER JOIN adherent_tri at ON le.code_pers = at.id_adh)
+                 LEFT OUTER JOIN livrenum ln ON le.id_livre = ln.id_livre
+                 WHERE le.id = ? AND le.status = 0
+                   AND at.trix IS NOT NULL AND ln.livrcode IS NOT NULL
+                 LIMIT 1`,
+                [id],
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result[0] || null);
+                }
+            );
+        });
+    }
+
     // CREATE
     static async addLivreEmprunt(data) {
         return new Promise((resolve, reject) => {
