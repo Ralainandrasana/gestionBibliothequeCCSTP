@@ -101,7 +101,7 @@ function Login() {
     <main className="login-page">
       <section className="login-shell" aria-label="Connexion au Centre Culturel St Paul">
         <div className="login-visual">
-          <img src="/image/login.png" alt="" className="login-visual-image" />
+          <img src="/image/login.webp" alt="" className="login-visual-image" />
           <div className="login-visual-overlay">
             <div className="login-welcome">
               <h1>Bienvenue !</h1>
