@@ -1,37 +1,9 @@
+/* eslint-disable react/prop-types */
 import { Card } from 'antd';
 import { UserOutlined, PlayCircleOutlined, TableOutlined, PlaySquareOutlined } from '@ant-design/icons';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
 
-function Effectif() {
-    const [effectifLivre, setEffectifLivre] = useState('');
-    const [effectifAdherent, setEffectifAdherent] = useState('');
-
-      // Fonction pour récupérer les données
-  const fetchEffectifLivre = async () => {
-    try {
-      const response = await axios.get('/api/other/effectifTotalLivre');
-      setEffectifLivre(response.data[0].effectifLivre);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    }
-  };
-
-  const fetchEffectifAdherent = async () => {
-    try {
-      const response = await axios.get('/api/other/effectifTotalAdherent');
-      setEffectifAdherent(response.data[0].effectifAdherent);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    }
-  };
-
-  // Fetch des data
-  useEffect(() => {
-    fetchEffectifLivre();
-    fetchEffectifAdherent();
-  }, []);
+function Effectif({ effectifLivre, effectifAdherent }) {
   return (
     <>
         <div className="left">

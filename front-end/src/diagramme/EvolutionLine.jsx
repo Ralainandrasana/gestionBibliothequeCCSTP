@@ -1,28 +1,8 @@
-import React from 'react'
+/* eslint-disable react/prop-types */
 import { Line } from 'react-chartjs-2';
-import { useState, useEffect } from 'react';
 import { Card } from 'antd';
-import axios from 'axios';
 
-function EvolutionLine() {
-  const [effectifInscriptionParMois, setEffectifInscriptionParMois] = useState([]);
-
-  const fetchEffectifInscription = async () => {
-    try {
-      const response = await axios.get('/api/other/evolutionInscription');
-      setEffectifInscriptionParMois(response.data);
-    console.log(response.data);
-
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    }
-  };
-
-  // Fetch des données
-  useEffect(() => {
-    fetchEffectifInscription();
-  }, []);
-
+function EvolutionLine({ effectifInscriptionParMois }) {
   const dataLine = {
     labels: effectifInscriptionParMois.map(item => item.mois),
     datasets: [

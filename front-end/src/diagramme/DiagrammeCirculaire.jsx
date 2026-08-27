@@ -1,39 +1,8 @@
+/* eslint-disable react/prop-types */
 import { Doughnut } from 'react-chartjs-2';
 import { Card } from 'antd';
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
-function DiagrammeCirculaire() {
-  const [effectifLivreParType, setEffectifLivreParType] = useState([]);
-  const [effectifAdherentParCategorie, setEffectifAdherentParCategorie] = useState([]);
-
-  // Fonction pour récupérer les données
-  const fetchEffectifLivre = async () => {
-    try {
-      const response = await axios.get('/api/other/effectifLivreParType');
-      setEffectifLivreParType(response.data);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    }
-  };
-
-  const fetchEffectifAdherent = async () => {
-    try {
-      const response = await axios.get('/api/other/effectifAdherentParCategorie');
-      setEffectifAdherentParCategorie(response.data);
-    } catch (error) {
-      console.error('Erreur lors du fetch des données :', error);
-    }
-  };
-
-  // Fetch des données
-  useEffect(() => {
-    fetchEffectifLivre();
-    fetchEffectifAdherent();
-  }, []);
-
-  // Données pour les adhérents
-
+function DiagrammeCirculaire({ effectifLivreParType, effectifAdherentParCategorie }) {
   const dataAdherent = {
     labels: effectifAdherentParCategorie.map(item => item.categorie),
     datasets: [

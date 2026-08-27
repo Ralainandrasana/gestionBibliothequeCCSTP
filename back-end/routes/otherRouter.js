@@ -3,10 +3,13 @@ const livreController = require('../controllers/livreController')
 const adherentController = require('../controllers/adherentController')
 const personneController = require('../controllers/personneController')
 const livreEmpruntController = require('../controllers/livreEmpruntController')
+const dashboardController = require('../controllers/dashboardController');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { ROLES, STAFF_ROLES, ALL_ROLES } = require('../config/accessControl');
 
 router.use(authMiddleware);
+
+router.get('/dashboard-summary', roleMiddleware(ALL_ROLES), dashboardController.getSummary);
 
 //inofo sur l'effectif des livres et celles des adherents
 router.get('/effectifTotalAdherent', roleMiddleware(ALL_ROLES), adherentController.getEffectifAdherent) //Read
