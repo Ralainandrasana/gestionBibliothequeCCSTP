@@ -86,6 +86,15 @@ class UserModel {
 		});
 	}
 
+	static async deleteUsers(ids) {
+		return new Promise((resolve, reject) => {
+			db.query('DELETE FROM user WHERE id IN (?)', [ids], (error, result) => {
+				if (error) reject(error);
+				else resolve(result);
+			});
+		});
+	}
+
 	// READ - Vérifier si un utilisateur existe
 	static async checkUserIfExist(nom) {
 		return new Promise((resolve, reject) => {

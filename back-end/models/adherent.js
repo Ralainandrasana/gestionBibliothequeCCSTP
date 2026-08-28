@@ -252,20 +252,6 @@ class AdherentModel {
         });
     }
 
-     // increment nbr livreEmp
-     static async incrementNbrLivreEmp(id_adh) {
-        return new Promise((resolve, reject) => {
-            db.query('UPDATE adherent SET nbrLivreEmp = nbrLivreEmp + 1 WHERE id_adh = ?', 
-                     [id_adh], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-    }
-
     // decrement nbr livreEmp
     static async decrementNbrLivreEmp(id_adh) {
         return new Promise((resolve, reject) => {
@@ -289,6 +275,15 @@ class AdherentModel {
                 } else {
                     resolve(result);
                 }
+            });
+        });
+    }
+
+    static async deleteAdherents(ids) {
+        return new Promise((resolve, reject) => {
+            db.query('DELETE FROM adherent WHERE id_adh IN (?)', [ids], (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
             });
         });
     }

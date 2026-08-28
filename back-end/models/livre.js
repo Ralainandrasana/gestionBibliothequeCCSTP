@@ -124,20 +124,6 @@ static async getAutoCompleteLivres(query) {
     }
 
     // UPDATE
-    static async setDisponible(id_livre) {
-        return new Promise((resolve, reject) => {
-            db.query('UPDATE livre SET disponible = false WHERE id_livre = ?', 
-                     [id_livre], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
-    }
-
-    // UPDATE
     static async setDisponibleRendu(id_livre) {
         return new Promise((resolve, reject) => {
             db.query('UPDATE livre SET disponible = true WHERE id_livre = ?', 

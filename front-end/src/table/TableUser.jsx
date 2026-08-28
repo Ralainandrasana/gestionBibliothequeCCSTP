@@ -74,9 +74,7 @@ function TablePersonne() {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await Promise.all(
-            selectedRowKeys.map((id) => axios.delete(`/api/crud/users/${id}`))
-          );
+          await axios.post('/api/crud/users/bulk-delete', { ids: selectedRowKeys });
           message.success('Utilisateurs supprimés avec succès.');
           setData((currentData) => currentData.filter((currentUser) => !selectedRowKeys.includes(currentUser.id)));
           setSelectedRowKeys([]);

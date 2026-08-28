@@ -107,6 +107,15 @@ class PersonneModel {
             );
         });
     }
+
+    static async deletePersonnes(ids) {
+        return new Promise((resolve, reject) => {
+            db.query('DELETE FROM personne WHERE id IN (?)', [ids], (error, result) => {
+                if (error) reject(error);
+                else resolve(result);
+            });
+        });
+    }
     // READ
     static async getMatricule() {
         return new Promise((resolve, reject) => {

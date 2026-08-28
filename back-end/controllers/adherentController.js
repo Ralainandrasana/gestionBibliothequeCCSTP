@@ -1,5 +1,6 @@
 const adherentModel = require("../models/adherent");
 const { getPagination, paginatedResponse } = require('../utils/pagination');
+const { parseBulkIds } = require('../utils/bulkIds');
 
 class AdherentController {
     // READ
@@ -93,6 +94,20 @@ static async avertirAdherant(req, res) {
             res.send('Adherent deleted successfully');
         } catch (error) {
             res.status(500).send('Error deleting Adherent');
+        }
+    }
+
+    static async deleteAdherents(req, res) {
+        try {
+            const ids = parseBulkIds(req.body.ids);
+            if (ids.length === 0) {
+                return res.status(400).json({ message: 'Aucun adhérent valide sélectionné.' });
+            }
+            const result = await adherentModel.deleteAdherents(ids);
+            res.json({ message: `${result.affectedRows} adhérent(s) supprimé(s).`, deleted: result.affectedRows });
+        } catch (error) {
+            console.error('Erreur lors de la suppression multiple des adhérents :', error);
+            res.status(500).json({ message: 'Impossible de supprimer les adhérents sélectionnés.' });
         }
     }
      // effectif total des adherents

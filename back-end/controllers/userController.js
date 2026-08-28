@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { ALL_ROLES, normalizeRole, ROLES } = require('../config/accessControl');
 const { getPagination, paginatedResponse } = require('../utils/pagination');
 const { buildUploadUrl } = require('../utils/uploadUrl');
+const { parseBulkIds } = require('../utils/bulkIds');
 
 const validateRole = (role) => {
     const normalizedRole = normalizeRole(role);
@@ -192,6 +193,23 @@ class UserController {
             else res.status(400).send('Erreur lors de la suppression de l’utilisateur.');
         } catch (error) {
             res.status(500).json({ message: "Erreur serveur.", error });
+        }
+    }
+
+    static async deleteUsers(req, res) {
+        try {
+            const ids = parseBulkIds(req.body.ids);
+            if (ids.length === 0) {
+                return res.status(400).json({ message: 'Aucun utilisateur valide sélectionné.' });
+            }
+            if (ids.includes(Number(req.session.userId))) {
+                return res.status(400).json({ message: 'Votre propre compte ne peut pas faire partie de la sélection.' });
+            }
+            const result = await userModel.deleteUsers(ids);
+            res.json({ message: `${result.affectedRows} utilisateur(s) supprimé(s).`, deleted: result.affectedRows });
+        } catch (error) {
+            console.error('Erreur lors de la suppression multiple des utilisateurs :', error);
+            res.status(500).json({ message: 'Impossible de supprimer les utilisateurs sélectionnés.' });
         }
     }
 	static async login(req, res) {

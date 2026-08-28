@@ -50,7 +50,11 @@ function TableAdherent() {
 
   const handleDelete = async (ids) => {
     try {
-      await Promise.all(ids.map(id => axios.delete(`/api/crud/adherents/${id}`)));
+      if (ids.length === 1) {
+        await axios.delete(`/api/crud/adherents/${ids[0]}`);
+      } else {
+        await axios.post('/api/crud/adherents/bulk-delete', { ids });
+      }
       message.success("Adhérents supprimés avec succès");
       refresh();
       setSelectedRowKeys([]);

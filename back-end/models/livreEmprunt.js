@@ -104,17 +104,90 @@ class LivreEmpruntModel {
 
     // CREATE
     static async addLivreEmprunt(data) {
-        return new Promise((resolve, reject) => {
-            const { code_pers, id_livre, date_emprunt, date_retour } = data;
-            db.query('INSERT INTO livre_emprunt(code_pers, id_livre, date_emprunt, date_retour, status, dateReelRetour, renouvelable) VALUES(?, ?, ?, ?, ?, ?, ?)', 
-                     [code_pers, id_livre, date_emprunt, date_retour, 0, null, true], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+        const connection = await getConnection();
+        const { code_pers, id_livre, date_emprunt, date_retour } = data;
+
+        try {
+            await beginTransaction(connection);
+
+            // Conserver le même ordre de verrouillage que le rendu : livre,
+            // puis adhérent. Cela limite aussi les risques d'interblocage.
+            const livres = await runConnectionQuery(
+                connection,
+                'SELECT id_livre, disponible FROM livre WHERE id_livre = ? FOR UPDATE',
+                [id_livre]
+            );
+            if (livres.length === 0) {
+                await rollbackTransaction(connection);
+                return { added: false, reason: 'LIVRE_INTROUVABLE' };
+            }
+            if (Number(livres[0].disponible) !== 1) {
+                await rollbackTransaction(connection);
+                return { added: false, reason: 'LIVRE_INDISPONIBLE' };
+            }
+
+            const adherents = await runConnectionQuery(
+                connection,
+                `SELECT id_adh, sanctionner, date_fin, nbrLivreEmp,
+                        (CURRENT_DATE >= date_fin) AS adhesion_expiree
+                 FROM adherent
+                 WHERE id_adh = ?
+                 FOR UPDATE`,
+                [code_pers]
+            );
+            if (adherents.length === 0) {
+                await rollbackTransaction(connection);
+                return { added: false, reason: 'ADHERENT_INTROUVABLE' };
+            }
+
+            const adherent = adherents[0];
+            if (Number(adherent.sanctionner) === 1) {
+                await rollbackTransaction(connection);
+                return { added: false, reason: 'ADHERENT_SANCTIONNE' };
+            }
+            if (Number(adherent.adhesion_expiree) === 1) {
+                await rollbackTransaction(connection);
+                return {
+                    added: false,
+                    reason: 'ADHESION_EXPIREE',
+                    date_fin: adherent.date_fin
+                };
+            }
+            if (Number(adherent.nbrLivreEmp) >= 2) {
+                await rollbackTransaction(connection);
+                return {
+                    added: false,
+                    reason: 'LIMITE_LIVRES_ATTEINTE',
+                    nbrLivreEmp: Number(adherent.nbrLivreEmp) || 0
+                };
+            }
+
+            const insertResult = await runConnectionQuery(
+                connection,
+                `INSERT INTO livre_emprunt
+                    (code_pers, id_livre, date_emprunt, date_retour, status, dateReelRetour, renouvelable)
+                 VALUES (?, ?, ?, ?, 0, NULL, TRUE)`,
+                [code_pers, id_livre, date_emprunt, date_retour]
+            );
+            await runConnectionQuery(
+                connection,
+                'UPDATE livre SET disponible = FALSE WHERE id_livre = ?',
+                [id_livre]
+            );
+            await runConnectionQuery(
+                connection,
+                'UPDATE adherent SET nbrLivreEmp = COALESCE(nbrLivreEmp, 0) + 1 WHERE id_adh = ?',
+                [code_pers]
+            );
+
+            await commitTransaction(connection);
+            return { added: true, insertId: insertResult.insertId };
+        } catch (error) {
+            await rollbackTransaction(connection);
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
     // UPDATE
@@ -352,6 +425,71 @@ class LivreEmpruntModel {
                 id_livre: emprunt.id_livre,
                 id_adh: emprunt.code_pers
             };
+        } catch (error) {
+            await rollbackTransaction(connection);
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    static async deleteLivreEmprunts(ids) {
+        const connection = await getConnection();
+
+        try {
+            await beginTransaction(connection);
+            const emprunts = await runConnectionQuery(
+                connection,
+                'SELECT id, code_pers, id_livre, status FROM livre_emprunt WHERE id IN (?) FOR UPDATE',
+                [ids]
+            );
+
+            if (emprunts.length === 0) {
+                await rollbackTransaction(connection);
+                return { deleted: 0, restoredBooks: 0 };
+            }
+
+            const nonRendus = emprunts.filter(emprunt => Number(emprunt.status) === 0);
+            const livreIds = [...new Set(nonRendus.map(emprunt => Number(emprunt.id_livre)).filter(Boolean))];
+            const compteurs = new Map();
+            nonRendus.forEach(emprunt => {
+                const adherentId = Number(emprunt.code_pers);
+                if (adherentId) compteurs.set(adherentId, (compteurs.get(adherentId) || 0) + 1);
+            });
+
+            if (livreIds.length > 0) {
+                await runConnectionQuery(
+                    connection,
+                    'UPDATE livre SET disponible = TRUE WHERE id_livre IN (?)',
+                    [livreIds]
+                );
+            }
+
+            if (compteurs.size > 0) {
+                const compteurEntries = [...compteurs.entries()];
+                const cases = compteurEntries.map(() => 'WHEN ? THEN ?').join(' ');
+                const caseValues = compteurEntries.flatMap(([adherentId, quantite]) => [adherentId, quantite]);
+                const adherentIds = compteurEntries.map(([adherentId]) => adherentId);
+                await runConnectionQuery(
+                    connection,
+                    `UPDATE adherent
+                     SET nbrLivreEmp = GREATEST(
+                         COALESCE(nbrLivreEmp, 0) - CASE id_adh ${cases} ELSE 0 END,
+                         0
+                     )
+                     WHERE id_adh IN (?)`,
+                    [...caseValues, adherentIds]
+                );
+            }
+
+            const deleteResult = await runConnectionQuery(
+                connection,
+                'DELETE FROM livre_emprunt WHERE id IN (?)',
+                [ids]
+            );
+
+            await commitTransaction(connection);
+            return { deleted: deleteResult.affectedRows, restoredBooks: livreIds.length };
         } catch (error) {
             await rollbackTransaction(connection);
             throw error;

@@ -1,6 +1,7 @@
 const personneModel = require("../models/personne");
 const { getPagination, paginatedResponse } = require('../utils/pagination');
 const { buildUploadUrl } = require('../utils/uploadUrl');
+const { parseBulkIds } = require('../utils/bulkIds');
 
 class PersonneController {
     // READ
@@ -81,6 +82,20 @@ class PersonneController {
             res.send('Personne deleted successfully');
         } catch (error) {
             res.status(500).send('Error deleting Personne');
+        }
+    }
+
+    static async deletePersonnes(req, res) {
+        try {
+            const ids = parseBulkIds(req.body.ids);
+            if (ids.length === 0) {
+                return res.status(400).json({ message: 'Aucune personne valide sélectionnée.' });
+            }
+            const result = await personneModel.deletePersonnes(ids);
+            res.json({ message: `${result.affectedRows} personne(s) supprimée(s).`, deleted: result.affectedRows });
+        } catch (error) {
+            console.error('Erreur lors de la suppression multiple des personnes :', error);
+            res.status(500).json({ message: 'Impossible de supprimer les personnes sélectionnées.' });
         }
     }
 }

@@ -19,6 +19,7 @@ router.get('/users', roleMiddleware(STAFF_ROLES), userController.getAllUser) //R
 router.get('/users/:id', roleMiddleware(STAFF_ROLES), userController.getUserById) // Read one
 router.post('/register', roleMiddleware([ROLES.ADMIN]), upload.single('photo'), validateUploadedImage, userController.addNewUser) //Create
 router.put('/users', roleMiddleware([ROLES.ADMIN]), upload.single('photo'), validateUploadedImage, userController.updateAnUser) //Update
+router.post('/users/bulk-delete', roleMiddleware([ROLES.ADMIN]), userController.deleteUsers) // Delete multiple
 router.delete('/users/:id', roleMiddleware([ROLES.ADMIN]), userController.deleteAnUser) //Delete
 
 // CRUD table Dewey
@@ -33,6 +34,7 @@ router.get('/adherents/attached-person-ids', roleMiddleware(STAFF_ROLES), adhere
 router.get('/adherents/:id_adh', roleMiddleware(STAFF_ROLES), adherentController.getAdherentById);
 router.post('/adherents', roleMiddleware(STAFF_ROLES), upload.none(), adherentController.addNewAdherent);
 router.put('/adherents', roleMiddleware(STAFF_ROLES), adherentController.updateAdherent);
+router.post('/adherents/bulk-delete', roleMiddleware([ROLES.ADMIN]), adherentController.deleteAdherents);
 router.delete('/adherents/:id_adh', roleMiddleware([ROLES.ADMIN]), adherentController.deleteAdherent);
 
 // App Logs routes
@@ -53,6 +55,7 @@ router.get('/livre_emprunts_non_rendu', roleMiddleware(STAFF_ROLES), livreEmprun
 router.get('/livre_emprunts_non_rendu/:id', roleMiddleware(STAFF_ROLES), livreEmpruntController.getLivreEmpruntNonRenduById);
 router.post('/livre_emprunts', roleMiddleware(STAFF_ROLES), upload.none(),livreEmpruntController.addNewLivreEmprunt);
 router.put('/livre_emprunts', roleMiddleware(STAFF_ROLES), livreEmpruntController.updateLivreEmprunt);
+router.post('/livre_emprunts/bulk-delete', roleMiddleware([ROLES.ADMIN]), livreEmpruntController.deleteLivreEmprunts);
 router.delete('/livre_emprunts/:id', roleMiddleware([ROLES.ADMIN]), livreEmpruntController.deleteLivreEmprunt);
 
 // Oeuvre routes
@@ -66,6 +69,7 @@ router.get('/personnes', roleMiddleware(STAFF_ROLES), personneController.getAllP
 router.get('/personnes/:id', roleMiddleware(STAFF_ROLES), personneController.getPersonneById);
 router.post('/personnes', roleMiddleware(STAFF_ROLES), upload.single('photo'), validateUploadedImage, personneController.addNewPersonne);
 router.put('/personnes', roleMiddleware(STAFF_ROLES), upload.single('photo'), validateUploadedImage, personneController.updatePersonne);
+router.post('/personnes/bulk-delete', roleMiddleware([ROLES.ADMIN]), personneController.deletePersonnes);
 router.delete('/personnes/:id', roleMiddleware([ROLES.ADMIN]), personneController.deletePersonne);
 
 module.exports = router

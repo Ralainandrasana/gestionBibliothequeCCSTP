@@ -1,7 +1,6 @@
 const livreEmpruntModel = require("../models/livreEmprunt");
-const adherantModel = require("../models/adherent");
-const livreModel = require("../models/livre");
 const { getPagination, paginatedResponse } = require('../utils/pagination');
+const { parseBulkIds } = require('../utils/bulkIds');
 
 function formatDateFr(value) {
     if (!value) return null;
@@ -71,13 +70,27 @@ class LivreEmpruntController {
 
     static async addNewLivreEmprunt(req, res) {
         try {
-            const { code_pers, id_livre } = req.body;
-            await livreEmpruntModel.addLivreEmprunt(req.body);
-            await livreModel.setDisponible(id_livre);
-            await adherantModel.incrementNbrLivreEmp(code_pers);
-            res.send('Livre Emprunt added successfully');
+            const result = await livreEmpruntModel.addLivreEmprunt(req.body);
+            if (!result.added) {
+                const messages = {
+                    LIVRE_INTROUVABLE: 'Le livre sélectionné est introuvable.',
+                    LIVRE_INDISPONIBLE: 'Ce livre est déjà emprunté et n’est plus disponible.',
+                    ADHERENT_INTROUVABLE: "L’adhérent sélectionné est introuvable.",
+                    ADHERENT_SANCTIONNE: "Cet adhérent est sanctionné et ne peut pas effectuer d’emprunt.",
+                    ADHESION_EXPIREE: "L’adhésion de cet adhérent est expirée.",
+                    LIMITE_LIVRES_ATTEINTE: `Cet adhérent a atteint la limite de 2 livres empruntés simultanément (${result.nbrLivreEmp || 0} actuellement).`
+                };
+                const status = result.reason?.endsWith('INTROUVABLE') ? 404 : 409;
+                return res.status(status).json({
+                    code: result.reason,
+                    message: messages[result.reason] || "L’emprunt ne peut pas être enregistré.",
+                    date_fin: result.date_fin || null
+                });
+            }
+            res.status(201).json({ message: 'Emprunt ajouté avec succès.', id: result.insertId });
         } catch (error) {
-            res.status(500).send('Error adding Livre Emprunt');
+            console.error('Erreur lors de l’ajout de l’emprunt :', error);
+            res.status(500).json({ message: "Erreur lors de l’ajout de l’emprunt." });
         }
     }
 
@@ -166,6 +179,24 @@ class LivreEmpruntController {
         } catch (error) {
             console.error('Erreur lors de la suppression de l’emprunt :', error);
             res.status(500).json({ message: 'Erreur lors de la suppression de l’emprunt.' });
+        }
+    }
+
+    static async deleteLivreEmprunts(req, res) {
+        try {
+            const ids = parseBulkIds(req.body.ids);
+            if (ids.length === 0) {
+                return res.status(400).json({ message: 'Aucun emprunt valide sélectionné.' });
+            }
+            const result = await livreEmpruntModel.deleteLivreEmprunts(ids);
+            res.json({
+                message: `${result.deleted} emprunt(s) supprimé(s).`,
+                deleted: result.deleted,
+                restoredBooks: result.restoredBooks
+            });
+        } catch (error) {
+            console.error('Erreur lors de la suppression multiple des emprunts :', error);
+            res.status(500).json({ message: 'Impossible de supprimer les emprunts sélectionnés.' });
         }
     }
 }

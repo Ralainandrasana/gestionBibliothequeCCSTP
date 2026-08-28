@@ -26,7 +26,7 @@ const onFinish = async (values, navigate) => {
     navigate('/GestionBibliotheque/EmpruntLivre/nonRendu'); // Redirect to the specified route
   } catch (error) {
     console.log('Erreur lors de la soumission du formulaire :', error);
-    message.error("Erreur lors de l'ajout, veuillez réessayer."); // Show error message
+    message.error(error.response?.data?.message || "Erreur lors de l'ajout, veuillez réessayer.");
   }
 };
 

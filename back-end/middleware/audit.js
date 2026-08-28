@@ -4,7 +4,7 @@ const { runWithAuditContext, getLastSqlQuery, getLastInsertId } = require('../ut
 const SENSITIVE_FIELD = /(password|passwd|pswd|token|secret|authorization|cookie|session|reset.?key|login_session_key)/i;
 const IDENTIFIER_FIELDS = [
     'id', 'log_id', 'userId', 'id_user', 'id_adh', 'id_livre',
-    'id_emprunt', 'id_oeuvre', 'id_personne', 'id_dewey'
+    'id_emprunt', 'id_oeuvre', 'id_personne', 'id_dewey', 'ids'
 ];
 
 const TABLE_NAMES = {
@@ -74,6 +74,7 @@ function getAction(req) {
         return AUTH_ACTIONS[parts[2]] || 'edit';
     }
 
+    if (parts.includes('bulk-delete')) return 'delete';
     if (req.method === 'POST') return 'add';
     if (req.method === 'DELETE') return 'delete';
     return 'edit';

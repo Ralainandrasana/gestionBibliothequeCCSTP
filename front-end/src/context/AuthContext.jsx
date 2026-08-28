@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { clearTableCache } from '../utils/tableCache';
 
 const AuthContext = createContext();
 
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/auth/login', { nom, pswd });
       
       if (response.data.success) {
+        clearTableCache();
         setIsAuthenticated(true);
         setUser(response.data.user);
         return { success: true };
@@ -74,6 +76,7 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     } finally {
+      clearTableCache();
       setIsAuthenticated(false);
       setUser(null);
     }

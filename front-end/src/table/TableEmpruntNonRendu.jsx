@@ -185,9 +185,7 @@ const handleRendre = (id) => {
       cancelText: 'Non',
       onOk: async () => {
         try {
-          await Promise.all(
-            selectedRowKeys.map((id) => axios.delete(`/api/crud/livre_emprunts/${id}`))
-          );
+          await axios.post('/api/crud/livre_emprunts/bulk-delete', { ids: selectedRowKeys });
           message.success('Emprunts supprimés avec succès.');
           setData((prevData) => prevData.filter((personne) => !selectedRowKeys.includes(personne.id)));
           setSelectedRowKeys([]); // Réinitialiser la sélection après suppression
