@@ -178,6 +178,7 @@ class AdherentModel {
                 baseSql,
                 searchColumns: ['rang', 'code', 'nom', 'prenom', 'categorie', 'nombreEmpruntEffectue'],
                 orderBy: 'source.rang ASC',
+                totalMode: 'window',
                 pagination
             });
         }

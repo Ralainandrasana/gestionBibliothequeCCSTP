@@ -12,6 +12,7 @@ class PersonneModel {
                 baseSql,
                 searchColumns: ['id', 'code', 'nom', 'prenom', 'adresse', 'profession', 'tel', 'CIN'],
                 orderBy: 'source.id DESC',
+                totalMode: 'separate',
                 pagination
             });
         }

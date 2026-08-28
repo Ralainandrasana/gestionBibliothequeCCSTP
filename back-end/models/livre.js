@@ -208,6 +208,7 @@ static async getAutoCompleteLivres(query) {
                 baseSql,
                 searchColumns: ['rang', 'id_livre', 'titre', 'deway', 'sous_titre', 'auteur', 'nombreEmprunt'],
                 orderBy: 'source.rang ASC',
+                totalMode: 'window',
                 pagination
             });
         }

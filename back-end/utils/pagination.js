@@ -41,7 +41,16 @@ function query(sql, values) {
     });
 }
 
-async function runPaginatedQuery({ baseSql, values = [], searchColumns = [], filterClauses = [], filterValues = [], orderBy, pagination }) {
+async function runPaginatedQuery({
+    baseSql,
+    values = [],
+    searchColumns = [],
+    filterClauses = [],
+    filterValues = [],
+    orderBy,
+    pagination,
+    totalMode = 'window'
+}) {
     const safeColumns = searchColumns.filter(column => /^[A-Za-z0-9_]+$/.test(column));
     const conditions = [...filterClauses];
     const conditionValues = [...filterValues];
@@ -50,21 +59,59 @@ async function runPaginatedQuery({ baseSql, values = [], searchColumns = [], fil
         conditionValues.push(`%${pagination.search}%`);
     }
     const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    const queryValues = [...values, ...conditionValues, pagination.limit, pagination.offset];
+    const filteredValues = [...values, ...conditionValues];
     const ordering = orderBy ? `ORDER BY ${orderBy}` : '';
+    const normalizedBaseSql = baseSql.replace(/;\s*$/, '');
 
-    const rows = await query(
-        `SELECT source.*, COUNT(*) OVER() AS __pagination_total
-         FROM (${baseSql.replace(/;\s*$/, '')}) AS source
-         ${whereClause}
-         ${ordering}
-         LIMIT ? OFFSET ?`,
-        queryValues
-    );
+    if (totalMode === 'window') {
+        const rows = await query(
+            `SELECT source.*, COUNT(*) OVER() AS __pagination_total
+             FROM (${normalizedBaseSql}) AS source
+             ${whereClause}
+             ${ordering}
+             LIMIT ? OFFSET ?`,
+            [...filteredValues, pagination.limit, pagination.offset]
+        );
 
-    const total = Number(rows[0]?.__pagination_total || 0);
-    rows.forEach(row => delete row.__pagination_total);
-    return { rows, total };
+        let total = Number(rows[0]?.__pagination_total || 0);
+        rows.forEach(row => delete row.__pagination_total);
+
+        // Une page devenue vide apres une suppression ne contient plus la
+        // valeur de fenetre. Recompter seulement dans ce cas exceptionnel.
+        if (rows.length === 0 && pagination.offset > 0) {
+            const countRows = await query(
+                `SELECT COUNT(*) AS total
+                 FROM (${normalizedBaseSql}) AS source
+                 ${whereClause}`,
+                filteredValues
+            );
+            total = Number(countRows[0]?.total || 0);
+        }
+
+        return { rows, total };
+    }
+
+    // Sur une liste simple, la requete de lignes peut s'arreter des que LIMIT
+    // est atteint. Le comptage se fait en parallele sans elargir chaque ligne
+    // avec une fonction fenetre, ce qui reduit les lectures et la memoire SQL.
+    const [rows, countRows] = await Promise.all([
+        query(
+            `SELECT source.*
+             FROM (${normalizedBaseSql}) AS source
+             ${whereClause}
+             ${ordering}
+             LIMIT ? OFFSET ?`,
+            [...filteredValues, pagination.limit, pagination.offset]
+        ),
+        query(
+            `SELECT COUNT(*) AS total
+             FROM (${normalizedBaseSql}) AS source
+             ${whereClause}`,
+            filteredValues
+        )
+    ]);
+
+    return { rows, total: Number(countRows[0]?.total || 0) };
 }
 
 module.exports = { getPagination, paginatedResponse, runPaginatedQuery };
