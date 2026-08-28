@@ -4,7 +4,7 @@ class DeweyModel {
     // READ
     static async getDeweys() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM dewey', [], (error, result) => {
+            db.query('SELECT code, titre, description FROM dewey', [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

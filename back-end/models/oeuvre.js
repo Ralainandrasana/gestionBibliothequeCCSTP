@@ -4,7 +4,9 @@ class OeuvreModel {
     // READ
     static async getOeuvres() {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM oeuvre', [], (error, result) => {
+            db.query(
+                'SELECT id, titre, sous_titre, auteur, nbrExemplaire, nbrExemplaireDispo FROM oeuvre',
+                [], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {

@@ -89,7 +89,11 @@ class UserModel {
 	// READ - Vérifier si un utilisateur existe
 	static async checkUserIfExist(nom) {
 		return new Promise((resolve, reject) => {
-			db.query('SELECT * FROM user WHERE nom = ?', [nom], (error, result) => {
+			db.query(
+				`SELECT id, nom, pswd, email, photo, roles, email_status,
+				        account_status, user_role_id
+				 FROM user WHERE nom = ? LIMIT 1`,
+				[nom], (error, result) => {
 				if (error) {
 					reject(error);
 				} else {
@@ -99,20 +103,26 @@ class UserModel {
 						resolve(null);
 					}
 				}
-			});
+				}
+			);
 		});
 	}
 
 	// READ - Récupérer les informations d'un utilisateur
 	static async getInfoUser(nom) {
 		return new Promise((resolve, reject) => {
-			db.query('SELECT * FROM user WHERE nom = ?', [nom], (error, result) => {
+			db.query(
+				`SELECT id, nom, pswd, email, photo, roles, email_status,
+				        account_status, user_role_id
+				 FROM user WHERE nom = ? LIMIT 1`,
+				[nom], (error, result) => {
 				if (error) {
 					reject(error);
 				} else {
 					resolve(result);
 				}
-			});
+				}
+			);
 		});
 	}
 
@@ -132,7 +142,7 @@ class UserModel {
 	// READ - Récupérer un utilisateur par son email
 	static async getUserByEmail(email) {
 		return new Promise((resolve, reject) => {
-			db.query('SELECT * FROM user WHERE email = ?', [email], (error, result) => {
+			db.query('SELECT id, email FROM user WHERE email = ? LIMIT 1', [email], (error, result) => {
 				if (error) {
 					reject(error);
 				} else {
@@ -225,7 +235,7 @@ class UserModel {
 	// READ - Vérifier le token de réinitialisation
 	static async verifyPasswordResetKey(resetKey) {
 		return new Promise((resolve, reject) => {
-			db.query('SELECT * FROM user WHERE password_reset_key = ?', [resetKey], (error, result) => {
+			db.query('SELECT id FROM user WHERE password_reset_key = ? LIMIT 1', [resetKey], (error, result) => {
 				if (error) {
 					reject(error);
 				} else {

@@ -4,7 +4,9 @@ const { runPaginatedQuery } = require('../utils/pagination');
 class PersonneModel {
     // READ
     static async getPersonnes(pagination = null) {
-        const baseSql = 'SELECT * FROM personne';
+        const baseSql = `SELECT id, code, nom, prenom, date_nais, CIN,
+                                adresse, profession, tel, photo
+                         FROM personne`;
         if (pagination) {
             return runPaginatedQuery({
                 baseSql,
@@ -26,10 +28,17 @@ class PersonneModel {
 
     static async getPersonneById(id) {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM personne WHERE id = ? LIMIT 1', [id], (error, result) => {
+            db.query(
+                `SELECT id, code, nom, prenom, date_nais, lieu, CIN, adresse,
+                        profession, departement, tel, date_inscription, photo
+                 FROM personne
+                 WHERE id = ?
+                 LIMIT 1`,
+                [id], (error, result) => {
                 if (error) reject(error);
                 else resolve(result[0] || null);
-            });
+                }
+            );
         });
     }
 

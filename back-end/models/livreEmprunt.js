@@ -38,7 +38,8 @@ function rollbackTransaction(connection) {
 class LivreEmpruntModel {
     // READ
     static async getLivreEmpruntsRecent(pagination = null) {
-        const baseSql = 'SELECT * FROM emp_recent';
+        const baseSql = `SELECT id, date_emprunt, date_retour, trix, livrcode
+                         FROM emp_recent`;
         if (pagination) {
             return runPaginatedQuery({
                 baseSql,

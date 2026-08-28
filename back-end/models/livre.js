@@ -4,7 +4,10 @@ const { runPaginatedQuery } = require('../utils/pagination');
 class LivreModel {
     // READ
     static async getLivres(pagination = null) {
-        const baseSql = 'SELECT * FROM livre';
+        const baseSql = `SELECT id_livre, Type, titre, sous_titre, auteur, editeur,
+                                deway, cote, ISBN, langue_pays, dimension, nbre_page,
+                                etat, status, date_status, disponible
+                         FROM livre`;
         if (pagination) {
             const filterClauses = [];
             const filterValues = [];
@@ -40,10 +43,18 @@ class LivreModel {
 
     static async getLivreById(id_livre) {
         return new Promise((resolve, reject) => {
-            db.query('SELECT * FROM livre WHERE id_livre = ? LIMIT 1', [id_livre], (error, result) => {
+            db.query(
+                `SELECT id_livre, Type, titre, sous_titre, auteur, editeur, deway,
+                        cote, ISBN, langue_pays, dimension, nbre_page, etat, status,
+                        date_status, photo, anneeEdition, disponible, idOeuvre
+                 FROM livre
+                 WHERE id_livre = ?
+                 LIMIT 1`,
+                [id_livre], (error, result) => {
                 if (error) reject(error);
                 else resolve(result[0] || null);
-            });
+                }
+            );
         });
     }
 

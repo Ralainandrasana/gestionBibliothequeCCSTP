@@ -12,7 +12,11 @@ class AppLogsModel {
 
         const rows = await new Promise((resolve, reject) => {
             db.query(
-                `SELECT * FROM app_logs${whereClause} ORDER BY log_id DESC LIMIT ? OFFSET ?`,
+                `SELECT log_id, Timestamp, Action, TableName, RecordID, SqlQuery,
+                        UserID, ServerIP, RequestUrl, RequestData,
+                        RequestCompleted, RequestMsg
+                 FROM app_logs${whereClause}
+                 ORDER BY log_id DESC LIMIT ? OFFSET ?`,
                 [...searchValues, limit, offset],
                 (error, result) => error ? reject(error) : resolve(result)
             );

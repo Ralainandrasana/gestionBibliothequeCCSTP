@@ -13,7 +13,10 @@ const CLASSEMENT_ADHERENTS_SQL = "SELECT ROW_NUMBER() OVER(ORDER BY COUNT(code_p
 class AdherentModel {
     // READ
     static async getAdherents(pagination = null) {
-        const baseSql = 'SELECT * FROM adherent a left outer join personne p on a.id_pers = p.id';
+        const baseSql = `SELECT a.id_adh, a.categorie, a.date_reinscription,
+                                a.date_fin, a.penaliser, p.code, p.nom, p.prenom
+                         FROM adherent a
+                         LEFT OUTER JOIN personne p ON a.id_pers = p.id`;
         if (pagination) {
             const validity = pagination.filters?.validity;
             const filterClauses = validity === 'Valide'
@@ -41,7 +44,9 @@ class AdherentModel {
     static async getAdherentById(id_adh) {
         return new Promise((resolve, reject) => {
             db.query(
-                `SELECT *
+                `SELECT a.id_adh, a.categorie, a.date_reinscription, a.date_fin,
+                        a.type, a.id_pers, a.penaliser, a.sanctionner,
+                        a.nbrLivreEmp, p.code, p.nom, p.prenom
                  FROM adherent a
                  LEFT OUTER JOIN personne p ON a.id_pers = p.id
                  WHERE a.id_adh = ?
@@ -137,13 +142,18 @@ class AdherentModel {
     static async searchAdherant(id_adh) {//hello
         return new Promise((resolve, reject) => {
             // Utiliser le bon format pour LIKE
-            db.query("SELECT * FROM adherent WHERE id_adh = ?", [id_adh], (error, result) => {
+            db.query(
+                `SELECT id_adh, date_fin, penaliser, sanctionner, nbrLivreEmp
+                 FROM adherent
+                 WHERE id_adh = ?`,
+                [id_adh], (error, result) => {
                 if (error) {
                     reject(error);
                 } else {
                     resolve(result);
                 }
-            });
+                }
+            );
         });
     }
 
