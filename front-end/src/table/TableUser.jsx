@@ -1,4 +1,4 @@
-import { Table, Space, Avatar, Select, Input, Button, Modal, message, Spin } from 'antd';
+import { Table, Space, Avatar, Select, Input, Button, Modal, message } from 'antd';
 import { DeleteOutlined, EditOutlined, EyeOutlined, UserOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -34,8 +34,6 @@ function TablePersonne() {
     '/api/crud/users'
   );
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-  const [avatarLoading, setAvatarLoading] = useState({}); // Suivre le chargement des avatars
-
   const navigate = useNavigate();
 
   const handleClick = () => {
@@ -157,18 +155,14 @@ function TablePersonne() {
             width={80}
             dataIndex="photo" 
             key="photo" 
-            render={(photo, record) => (
-              <Spin spinning={avatarLoading[record.id]}>
-                <Avatar
-                  shape="circle"
-                  size={60}
-                  src={photo}
-                  alt="Photo"
-                  icon={<UserOutlined />}
-                  onLoad={() => setAvatarLoading((prev) => ({ ...prev, [record.id]: false }))}
-                  onError={() => setAvatarLoading((prev) => ({ ...prev, [record.id]: false }))}
-                />
-              </Spin>
+            render={(photo) => (
+              <Avatar
+                shape="circle"
+                size={60}
+                src={photo || undefined}
+                alt="Photo"
+                icon={<UserOutlined />}
+              />
             )}
           />
           <Column title="Nom" dataIndex="nom" key="nom" />
