@@ -1,6 +1,6 @@
 import { Button, Form, DatePicker, Select, message } from 'antd';
 import { RightOutlined, HomeOutlined } from '@ant-design/icons';
-import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
@@ -88,37 +88,60 @@ function AjoutPersonne() {
   const today = dayjs();
   const afterFourteenDay = today.add(14, "day");
 
-  const [adherentsInvalides, setAdherentsInvalides] = useState([]);
-  const [livreNonDispo, setLivreNonDispo] = useState([]);
+  const adherentValidationCache = useRef(new Map());
+  const livreValidationCache = useRef(new Map());
 
+  const validateAdherent = async (_, value) => {
+    if (!value) return;
 
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchAdherentsInvalides = async () => {
+    const cacheKey = String(value);
+    let restriction = adherentValidationCache.current.get(cacheKey);
+
+    if (!restriction) {
       try {
-        const response = await axios.get(`/api/other/empruntInvalide`);
-        setAdherentsInvalides(Array.isArray(response.data) ? response.data : []);
+        const response = await axios.get(`/api/other/adherent/search/${encodeURIComponent(value)}`);
+        const adherent = Array.isArray(response.data) ? response.data[0] : response.data;
+        if (!adherent) throw new Error('Adhérent introuvable');
+
+        restriction = {
+          est_sanctionne: Number(adherent.sanctionner) === 1,
+          adhesion_expiree: adherent.date_fin
+            ? !dayjs(adherent.date_fin).isAfter(dayjs(), 'day')
+            : true,
+          limite_livres_atteinte: Number(adherent.nbrLivreEmp) >= 2,
+          date_fin: adherent.date_fin,
+          nbrLivreEmp: adherent.nbrLivreEmp,
+        };
+        adherentValidationCache.current.set(cacheKey, restriction);
       } catch (error) {
-        console.error("Erreur lors de la récupération des restrictions des adhérents :", error);
+        console.error("Erreur lors de la vérification de l’adhérent :", error);
+        throw new Error("Impossible de vérifier cet adhérent.");
       }
+    }
+
+    const restrictionMessage = getAdherentRestrictionMessage(restriction);
+    if (restrictionMessage) throw new Error(restrictionMessage);
   };
 
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchLivreNonDispo = async () => {
-    try {
-      const response = await axios.get(`/api/other/livresNonDispo`);
-      
-      // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-      const idLivres = response.data.map(item => item.id_livre);
-      setLivreNonDispo(idLivres);
-    } catch (error) {
-      console.error("Erreur lors de la récupération des livres non dispo :", error);
-    }
-};
+  const validateLivre = async (_, value) => {
+    if (!value) return;
 
-useEffect(() => {
-    fetchAdherentsInvalides();
-    fetchLivreNonDispo();
-    }, []);
+    const cacheKey = String(value);
+    let disponible = livreValidationCache.current.get(cacheKey);
+
+    if (disponible === undefined) {
+      try {
+        const response = await axios.get(`/api/crud/livres/${encodeURIComponent(value)}`);
+        disponible = Number(response.data?.disponible) === 1;
+        livreValidationCache.current.set(cacheKey, disponible);
+      } catch (error) {
+        console.error('Erreur lors de la vérification du livre :', error);
+        throw new Error('Impossible de vérifier ce livre.');
+      }
+    }
+
+    if (!disponible) throw new Error('livre pas disponible');
+  };
 
 const handleDateChange = (date) =>{
     if(date){
@@ -175,22 +198,7 @@ const handleDateChange = (date) =>{
             name="code_pers"
             rules={[
               { required: true, message: 'Veuillez entrer le personne !' },
-              {
-                validator: (_, value) => {
-                  if (!value) {
-                    return Promise.resolve(); // Pas d'erreur si le champ est vide (gestion faite par `required`)
-                  }
-                  const restriction = adherentsInvalides.find(
-                    (item) => String(item.id_adh) === String(value)
-                  );
-                  const restrictionMessage = getAdherentRestrictionMessage(restriction);
-
-                  if (restrictionMessage) {
-                    return Promise.reject(new Error(restrictionMessage));
-                  }
-                  return Promise.resolve();
-                },
-              },
+              { validator: validateAdherent },
             ]}
           >
             <Select
@@ -210,17 +218,7 @@ const handleDateChange = (date) =>{
             name="id_livre"
             rules={[
               { required: true, message: 'Veuillez entrer livre !' },
-              {
-                validator: (_, value) => {
-                  if (!value) {
-                    return Promise.resolve(); // Pas d'erreur si le champ est vide (gestion faite par `required`)
-                  }
-                  if (livreNonDispo.includes(value)) {
-                    return Promise.reject(new Error('livre pas disponible'));
-                  }
-                  return Promise.resolve();
-                },
-              },
+              { validator: validateLivre },
             ]}
           >
             <Select
