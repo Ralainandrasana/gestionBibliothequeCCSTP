@@ -34,13 +34,14 @@ class PersonneController {
             res.status(500).send('Error retrieving Personnes');
         }
     }
-    // READ autocomplete
-    static async getMatricule(req, res) {
+    static async checkMatricule(req, res) {
         try {
-            const results = await personneModel.getMatricule();
-            res.json(results);
+            const code = String(req.query.code || '').trim().slice(0, 100);
+            if (!code) return res.status(400).json({ message: 'Matricule requis.' });
+            const exists = await personneModel.codeExists(code);
+            res.json({ exists });
         } catch (error) {
-            res.status(500).send('Error retrieving Personnes');
+            res.status(500).json({ message: 'Erreur lors de la vérification du matricule.' });
         }
     }
 
@@ -48,6 +49,9 @@ class PersonneController {
     static async addNewPersonne(req, res) {
         try {
             const { code, nom, prenom, date_nais, lieu, CIN, adresse, profession, departement, tel, date_inscription } = req.body; // Récupérer d'autres champs
+            if (await personneModel.codeExists(String(code || '').trim())) {
+                return res.status(409).json({ message: 'Le matricule existe déjà !' });
+            }
             const photoUrl = buildUploadUrl(req.file?.filename);
     
             // Vous pouvez maintenant ajouter l'utilisateur à la base de données avec les données et l'URL de la photo

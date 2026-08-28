@@ -116,15 +116,11 @@ class PersonneModel {
             });
         });
     }
-    // READ
-    static async getMatricule() {
+    static async codeExists(code) {
         return new Promise((resolve, reject) => {
-            db.query("select code from personne", [], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
+            db.query('SELECT 1 FROM personne WHERE code = ? LIMIT 1', [code], (error, result) => {
+                if (error) reject(error);
+                else resolve(result.length > 0);
             });
         });
     }

@@ -295,3 +295,9 @@ COMMIT;
 -- les statistiques utilisees par l'optimiseur SQL.
 OPTIMIZE TABLE app_logs, app_logs_archive;
 
+
+-- Optimisation exécutée le 2026-08-28 : vérification unitaire du matricule.
+-- Index non unique car les données historiques contiennent déjà quelques
+-- matricules dupliqués ; aucune ligne existante n'est modifiée.
+CREATE INDEX IF NOT EXISTS idx_personne_code ON personne (code);
+

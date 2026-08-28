@@ -1,6 +1,6 @@
 import { Button, Input, Form, DatePicker, Upload, message } from 'antd';
 import { RightOutlined, HomeOutlined, UploadOutlined } from '@ant-design/icons';
-import { useEffect, useState } from 'react';
+import { useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import {
@@ -39,7 +39,7 @@ const onFinish = async (values, navigate) => {
     navigate('/adherent/personne'); // Redirect to the specified route
   } catch (error) {
     console.log('Erreur lors de la soumission du formulaire :', error);
-    message.error('Erreur lors de l\'ajout, veuillez réessayer.'); // Show error message
+    message.error(error.response?.data?.message || 'Erreur lors de l\'ajout, veuillez réessayer.');
   }
 };
 
@@ -51,27 +51,27 @@ const onFinishFailed = (errorInfo) => {
 
 function AjoutPersonne() {
   const navigate = useNavigate(); // Initialize navigate
-  const [matricule, setMatricule] = useState([]);
+  const matriculeValidationCache = useRef(new Map());
 
+  const validateMatricule = async (_, value) => {
+    if (!value) return;
 
-  // Fonction pour rechercher les matricules depuis la base de données
-  const fetchMatricule = async () => {
+    const code = String(value).trim();
+    let exists = matriculeValidationCache.current.get(code);
+    if (exists === undefined) {
       try {
-        const response = await axios.get(`/api/other/matricule`);
-        
-        // Inclure à la fois 'id' et 'tri' pour pouvoir utiliser id lors de la sélection
-        const matricules = response.data.map(item => item.code);
-        setMatricule(matricules);
+        const response = await axios.get('/api/other/matricule/check', { params: { code } });
+        exists = Boolean(response.data?.exists);
+        matriculeValidationCache.current.set(code, exists);
       } catch (error) {
-        console.error("Erreur lors de la récupération des matricule :", error);
+        console.error('Erreur lors de la vérification du matricule :', error);
+        throw new Error('Impossible de vérifier ce matricule.');
       }
-  };
-  //
-   useEffect(() => {
-    fetchMatricule();
-    }, []);
+    }
 
-    console.log(matricule.length)
+    if (exists) throw new Error('Le matricule existe déjà !');
+  };
+
   return (
     <div className='component'>
       <div className="rout">
@@ -122,19 +122,10 @@ function AjoutPersonne() {
           <Form.Item
             label="Matricule"
             name="code"
+            validateDebounce={350}
             rules={[
               { required: true, message: 'Veuillez entrer le matricule !' },
-              {
-                validator: (_, value) => {
-                  if (!value) {
-                    return Promise.resolve(); // Pas d'erreur si le champ est vide (gestion faite par `required`)
-                  }
-                  if (matricule.includes(value)) {
-                    return Promise.reject(new Error('Le matricule existe déjà !'));
-                  }
-                  return Promise.resolve();
-                },
-              },
+              { validator: validateMatricule },
             ]}
           >
             <Input />

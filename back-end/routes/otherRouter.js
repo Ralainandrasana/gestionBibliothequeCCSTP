@@ -20,7 +20,7 @@ router.get('/effectifLivreParDewey', roleMiddleware(ALL_ROLES), livreController.
 router.get('/evolutionInscription', roleMiddleware(ALL_ROLES), adherentController.getEvolutionInscription) //Read
 router.get('/livresNonDispo', roleMiddleware(STAFF_ROLES), livreController.getAllLivresNonDispo) //Read
 router.get('/autoCompletePersonnes', roleMiddleware(STAFF_ROLES), personneController.getAutoCompletePersonnes) //Read
-router.get('/matricule', roleMiddleware(STAFF_ROLES), personneController.getMatricule) //Read
+router.get('/matricule/check', roleMiddleware(STAFF_ROLES), personneController.checkMatricule) //Read one
 router.get('/autoCompleteAdherents', roleMiddleware(STAFF_ROLES), adherentController.getAutoCompleteAdherents) //Read
 router.get('/empruntInvalide', roleMiddleware(STAFF_ROLES), adherentController.getEmpruntInvalide) //Read
 router.get('/classementAdherents', roleMiddleware([ROLES.ADMIN]), adherentController.getClassementAdherents) //Read
