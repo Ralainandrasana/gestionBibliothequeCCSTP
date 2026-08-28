@@ -248,8 +248,10 @@ body {
 /* TABLEAU PERSONNE*/
 .table{
   overflow-x: auto;
-  height: 75vh;
+  height: auto;
+  min-height: 0;
   padding-top: 10px;
+  padding-bottom: 12px;
   color: var(--blueSombre);
 }
 .table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-header table thead tr th{
