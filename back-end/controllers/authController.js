@@ -1,6 +1,7 @@
 const UserModel = require('../models/User');
 const crypto = require('crypto');
 const { ROLES, normalizeRole } = require('../config/accessControl');
+const { buildUploadUrl } = require('../utils/uploadUrl');
 
 const isActiveAccount = (status) => String(status || '').trim().toLowerCase() === 'active';
 const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
@@ -230,8 +231,7 @@ const authController = {
 			const email_status = 'pending';
 			const password_reset_key = null;
 			const account_status = 'pending';
-			const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
-			const photo = `${uploadPublicUrl}/${req.file.filename}`;
+			const photo = buildUploadUrl(req.file.filename);
 
 			// Créer l'utilisateur
 			const result = await UserModel.addUser(
@@ -329,9 +329,8 @@ const authController = {
 				}
 			}
 
-			const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
 			const photo = req.file
-				? `${uploadPublicUrl}/${req.file.filename}`
+				? buildUploadUrl(req.file.filename)
 				: (req.body.photo || user.photo);
 
 			const updated = await UserModel.updateProfile(

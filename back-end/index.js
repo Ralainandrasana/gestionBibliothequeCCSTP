@@ -13,6 +13,7 @@ const auditMiddleware = require('./middleware/audit');
 const decodeHtmlEntitiesResponse = require('./middleware/decodeHtmlEntitiesResponse');
 const gzipJsonResponse = require('./middleware/gzipJsonResponse');
 const createPrecompressedStatic = require('./middleware/precompressedStatic');
+const uploadErrorHandler = require('./middleware/uploadErrorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -60,6 +61,9 @@ app.use(auditMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/crud', crudRout); // Utilisation de routes avec point de montage
 app.use('/api/other', otherRout);
+
+// Transformer les erreurs Multer en messages JSON exploitables par les formulaires.
+app.use('/api', uploadErrorHandler);
 
 // Une route API inconnue ne doit jamais recevoir le index.html de React.
 app.use('/api', (req, res) => {

@@ -1,5 +1,6 @@
 const personneModel = require("../models/personne");
 const { getPagination, paginatedResponse } = require('../utils/pagination');
+const { buildUploadUrl } = require('../utils/uploadUrl');
 
 class PersonneController {
     // READ
@@ -46,7 +47,7 @@ class PersonneController {
     static async addNewPersonne(req, res) {
         try {
             const { code, nom, prenom, date_nais, lieu, CIN, adresse, profession, departement, tel, date_inscription } = req.body; // Récupérer d'autres champs
-            const photoUrl = `http://localhost/Bibliofianar/uploads/files/${req.file.filename}`; // Construire l'URL
+            const photoUrl = buildUploadUrl(req.file?.filename);
     
             // Vous pouvez maintenant ajouter l'utilisateur à la base de données avec les données et l'URL de la photo
             await personneModel.addPersonne({  code, nom, prenom, date_nais, lieu, CIN, adresse, profession, departement, tel, date_inscription, photo: photoUrl });
@@ -61,9 +62,8 @@ class PersonneController {
     // UPDATE
     static async updatePersonne(req, res) {
         try {
-            const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
             const photo = req.file
-                ? `${uploadPublicUrl}/${req.file.filename}`
+                ? buildUploadUrl(req.file.filename)
                 : req.body.photo;
 
             await personneModel.updatePersonne(req.body.id, { ...req.body, photo });

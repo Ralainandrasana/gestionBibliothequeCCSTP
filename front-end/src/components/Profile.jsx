@@ -22,6 +22,11 @@ import {
 } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import { normalizeRole, ROLES } from '../config/accessControl';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  optimizeImageFile,
+  validateImageBeforeUpload,
+} from '../utils/imageUpload';
 
 const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
@@ -70,7 +75,7 @@ function Profile() {
 
     const selectedPhoto = values.photo?.[0]?.originFileObj;
     if (selectedPhoto) {
-      formData.append('photo', selectedPhoto);
+      formData.append('photo', await optimizeImageFile(selectedPhoto));
     } else if (user.photo) {
       formData.append('photo', user.photo);
     }
@@ -237,7 +242,12 @@ function Profile() {
                     valuePropName="fileList"
                     getValueFromEvent={(event) => event?.fileList}
                   >
-                    <Upload listType="picture" maxCount={1} accept="image/*" beforeUpload={() => false}>
+                    <Upload
+                      listType="picture"
+                      maxCount={1}
+                      accept={IMAGE_UPLOAD_ACCEPT}
+                      beforeUpload={validateImageBeforeUpload}
+                    >
                       <Button icon={<UploadOutlined />}>Choisir une image</Button>
                     </Upload>
                   </Form.Item>

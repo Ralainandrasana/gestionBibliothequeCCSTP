@@ -32,6 +32,11 @@ import { entityRecords } from '../config/entityRecords';
 import { useAuth } from '../context/AuthContext';
 import { hasAnyRole, ROLES } from '../config/accessControl';
 import PageLoader from './PageLoader';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  optimizeImageFile,
+  validateImageBeforeUpload,
+} from '../utils/imageUpload';
 
 const { confirm } = Modal;
 
@@ -234,8 +239,8 @@ function EntityRecordPage({ entity, mode }) {
         <Upload
           listType="picture"
           maxCount={1}
-          accept="image/*"
-          beforeUpload={() => false}
+          accept={IMAGE_UPLOAD_ACCEPT}
+          beforeUpload={validateImageBeforeUpload}
         >
           <Button type="primary" icon={<UploadOutlined />}>Choisir une image</Button>
         </Upload>
@@ -299,7 +304,7 @@ function EntityRecordPage({ entity, mode }) {
       let requestPayload = payload;
       if (config.multipart) {
         requestPayload = new FormData();
-        Object.entries(payload).forEach(([key, value]) => {
+        for (const [key, value] of Object.entries(payload)) {
           const uploadField = editableFields.find(
             (field) => field.name === key && field.upload
           );
@@ -307,17 +312,17 @@ function EntityRecordPage({ entity, mode }) {
           if (uploadField) {
             const uploadedFile = values[key]?.[0]?.originFileObj;
             if (uploadedFile) {
-              requestPayload.append(key, uploadedFile);
+              requestPayload.append(key, await optimizeImageFile(uploadedFile));
             } else if (record[key]) {
               requestPayload.append(key, record[key]);
             }
-            return;
+            continue;
           }
 
           if (value !== undefined && value !== null && !Array.isArray(value)) {
             requestPayload.append(key, typeof value === 'boolean' ? Number(value) : value);
           }
-        });
+        }
       }
 
       await axios.put(config.updateEndpoint, requestPayload);

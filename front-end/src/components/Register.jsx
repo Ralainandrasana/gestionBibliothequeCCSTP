@@ -8,6 +8,11 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROLES } from '../config/accessControl';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  optimizeImageFile,
+  validateImageBeforeUpload,
+} from '../utils/imageUpload';
 
 const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 const PENDING_ACCOUNT_MESSAGE =
@@ -26,7 +31,7 @@ function Register() {
     formData.append('email', values.email.trim());
     formData.append('roles', ROLES.INVITER);
     formData.append('user_role_id', 2);
-    formData.append('photo', values.photo[0].originFileObj);
+    formData.append('photo', await optimizeImageFile(values.photo[0].originFileObj));
 
     setSubmitting(true);
     try {
@@ -150,8 +155,8 @@ function Register() {
                 <Upload
                   listType="picture"
                   maxCount={1}
-                  accept="image/*"
-                  beforeUpload={() => false}
+                  accept={IMAGE_UPLOAD_ACCEPT}
+                  beforeUpload={validateImageBeforeUpload}
                 >
                   <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
                 </Upload>

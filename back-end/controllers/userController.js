@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { ALL_ROLES, normalizeRole, ROLES } = require('../config/accessControl');
 const { getPagination, paginatedResponse } = require('../utils/pagination');
+const { buildUploadUrl } = require('../utils/uploadUrl');
 
 const validateRole = (role) => {
     const normalizedRole = normalizeRole(role);
@@ -92,8 +93,7 @@ class UserController {
 
             // Hachage du mot de passe
             const hashedPassword = await bcrypt.hash(pswd, 10);
-            const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
-            const photo = `${uploadPublicUrl}/${req.file.filename}`;
+            const photo = buildUploadUrl(req.file.filename);
             const loginSessionKey = null;
             const emailStatus = 'pending';
             const passwordResetKey = null;
@@ -158,9 +158,8 @@ class UserController {
                 return res.status(409).json({ message: "Cette adresse email existe déjà." });
             }
 
-            const uploadPublicUrl = (process.env.UPLOAD_PUBLIC_URL || 'http://localhost/Bibliofianar/uploads/files').replace(/\/$/, '');
             const photo = req.file
-                ? `${uploadPublicUrl}/${req.file.filename}`
+                ? buildUploadUrl(req.file.filename)
                 : (req.body.photo || currentUser.photo);
 
             const userUpdated = await userModel.updateUserDetails(

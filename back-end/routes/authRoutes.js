@@ -4,10 +4,11 @@ const authController = require('../controllers/authController');
 const { authMiddleware, roleMiddleware } = require('../middleware/auth');
 const { ALL_ROLES, ROLES, normalizeRole } = require('../config/accessControl');
 const upload = require('../config/upload');
+const validateUploadedImage = require('../middleware/validateUploadedImage');
 
 // Routes publiques
 router.post('/login', authController.login);
-router.post('/register', upload.single('photo'), authController.register);
+router.post('/register', upload.single('photo'), validateUploadedImage, authController.register);
 router.get('/check-session', authController.checkSession);
 router.post('/request-password-reset', authController.requestPasswordReset);
 router.post('/reset-password', authController.resetPassword);
@@ -15,7 +16,7 @@ router.post('/reset-password', authController.resetPassword);
 // Routes protégées (nécessitent une authentification)
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/profile', authMiddleware, authController.getProfile);
-router.put('/profile', authMiddleware, upload.single('photo'), authController.updateProfile);
+router.put('/profile', authMiddleware, upload.single('photo'), validateUploadedImage, authController.updateProfile);
 router.put('/change-password', authMiddleware, authController.changePassword);
 
 // Routes admin (exemple)

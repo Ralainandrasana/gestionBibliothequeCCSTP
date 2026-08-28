@@ -10,6 +10,11 @@ import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../config/accessControl';
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  optimizeImageFile,
+  validateImageBeforeUpload,
+} from '../utils/imageUpload';
 
 const PASSWORD_PATTERN = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
@@ -26,7 +31,7 @@ function AjoutUtilisateur() {
     formData.append('roles', values.roles);
     formData.append('account_status', values.account_status);
     formData.append('user_role_id', values.user_role_id);
-    formData.append('photo', values.photo[0].originFileObj);
+    formData.append('photo', await optimizeImageFile(values.photo[0].originFileObj));
 
     setSubmitting(true);
     try {
@@ -167,8 +172,8 @@ function AjoutUtilisateur() {
             <Upload
               listType="picture"
               maxCount={1}
-              accept="image/*"
-              beforeUpload={() => false}
+              accept={IMAGE_UPLOAD_ACCEPT}
+              beforeUpload={validateImageBeforeUpload}
             >
               <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
             </Upload>

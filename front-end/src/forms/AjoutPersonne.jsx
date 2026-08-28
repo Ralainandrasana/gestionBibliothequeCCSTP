@@ -3,17 +3,23 @@ import { RightOutlined, HomeOutlined, UploadOutlined } from '@ant-design/icons';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import {
+  IMAGE_UPLOAD_ACCEPT,
+  optimizeImageFile,
+  validateImageBeforeUpload,
+} from '../utils/imageUpload';
 
 const onFinish = async (values, navigate) => {
   const formData = new FormData();
+  const optimizedPhoto = values.photo?.[0]?.originFileObj
+    ? await optimizeImageFile(values.photo[0].originFileObj)
+    : null;
 
   Object.keys(values).forEach((key) => {
     if (key === 'photo') {
       // Check if the photo field is defined and has files
-      if (values.photo && values.photo.length > 0) {
-        formData.append('photo', values.photo[0].originFileObj); // Add the photo if it exists
-      } else {
-        formData.append('photo', null); // Set photo to null if no file is uploaded
+      if (optimizedPhoto) {
+        formData.append('photo', optimizedPhoto);
       }
     } else if (key === 'date_nais' || key === 'date_inscription') {
       // Format the date in 'YYYY-MM-DD'
@@ -192,8 +198,8 @@ function AjoutPersonne() {
             <Upload
               listType="picture"
               maxCount={1}
-              accept="image/*"
-              beforeUpload={() => false}
+              accept={IMAGE_UPLOAD_ACCEPT}
+              beforeUpload={validateImageBeforeUpload}
             >
               <Button type="primary" icon={<UploadOutlined />}>Upload</Button>
             </Upload>
