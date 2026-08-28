@@ -150,6 +150,7 @@ class LivreEmpruntModel {
                     a.sanctionner,
                     a.date_fin,
                     a.nbrLivreEmp,
+                    (CURRENT_DATE > le.date_retour) AS retour_en_retard,
                     (CURRENT_DATE >= a.date_fin) AS adhesion_expiree
                  FROM livre_emprunt le
                  LEFT JOIN adherent a ON a.id_adh = le.code_pers
@@ -191,6 +192,20 @@ class LivreEmpruntModel {
                 [id]
             );
 
+            if (Number(emprunt.retour_en_retard) === 1) {
+                await runConnectionQuery(
+                    connection,
+                    `UPDATE adherent
+                     SET sanctionner = CASE
+                             WHEN COALESCE(penaliser, 0) + 1 >= 3 THEN TRUE
+                             ELSE sanctionner
+                         END,
+                         penaliser = COALESCE(penaliser, 0) + 1
+                     WHERE id_adh = ?`,
+                    [emprunt.code_pers]
+                );
+            }
+
             const [empruntRenouvele] = await runConnectionQuery(
                 connection,
                 'SELECT date_emprunt_initiale, date_emprunt, date_retour, renouvelable FROM livre_emprunt WHERE id = ?',
@@ -198,7 +213,12 @@ class LivreEmpruntModel {
             );
 
             await commitTransaction(connection);
-            return { found: true, renewed: true, emprunt: empruntRenouvele };
+            return {
+                found: true,
+                renewed: true,
+                emprunt: empruntRenouvele,
+                retourEnRetard: Number(emprunt.retour_en_retard) === 1
+            };
         } catch (error) {
             await rollbackTransaction(connection);
             throw error;
@@ -207,22 +227,82 @@ class LivreEmpruntModel {
         }
     }
 
-    // UPDATE
     static async rendreLivreEmprunt(id) {
-        return new Promise((resolve, reject) => {
-            db.query(
+        const connection = await getConnection();
+
+        try {
+            await beginTransaction(connection);
+
+            const emprunts = await runConnectionQuery(
+                connection,
+                `SELECT id, code_pers, id_livre, status,
+                        (CURRENT_DATE > date_retour) AS retour_en_retard
+                 FROM livre_emprunt
+                 WHERE id = ?
+                 FOR UPDATE`,
+                [id]
+            );
+
+            if (emprunts.length === 0) {
+                await rollbackTransaction(connection);
+                return { found: false, returned: false };
+            }
+
+            const emprunt = emprunts[0];
+            if (Number(emprunt.status) !== 0) {
+                await rollbackTransaction(connection);
+                return { found: true, returned: false };
+            }
+
+            await runConnectionQuery(
+                connection,
                 `UPDATE livre_emprunt
                  SET status = 1,
                      dateReelRetour = COALESCE(NULLIF(dateReelRetour, '0000-00-00'), CURRENT_DATE)
-                 WHERE id = ? AND status = 0`,
-                [id], (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(result);
-                }
-            });
-        });
+                 WHERE id = ?`,
+                [id]
+            );
+
+            await runConnectionQuery(
+                connection,
+                'UPDATE livre SET disponible = TRUE WHERE id_livre = ?',
+                [emprunt.id_livre]
+            );
+
+            const retourEnRetard = Number(emprunt.retour_en_retard) === 1;
+            await runConnectionQuery(
+                connection,
+                `UPDATE adherent
+                 SET nbrLivreEmp = GREATEST(COALESCE(nbrLivreEmp, 0) - 1, 0),
+                     sanctionner = CASE
+                         WHEN ? = 1 AND COALESCE(penaliser, 0) + 1 >= 3 THEN TRUE
+                         ELSE sanctionner
+                     END,
+                     penaliser = COALESCE(penaliser, 0) + ?
+                 WHERE id_adh = ?`,
+                [retourEnRetard ? 1 : 0, retourEnRetard ? 1 : 0, emprunt.code_pers]
+            );
+
+            const adherents = await runConnectionQuery(
+                connection,
+                'SELECT penaliser, sanctionner FROM adherent WHERE id_adh = ? LIMIT 1',
+                [emprunt.code_pers]
+            );
+
+            await commitTransaction(connection);
+            return {
+                found: true,
+                returned: true,
+                retourEnRetard,
+                penaliser: Number(adherents[0]?.penaliser) || 0,
+                sanctionner: Boolean(adherents[0]?.sanctionner)
+            };
+        } catch (error) {
+            await rollbackTransaction(connection);
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
     // DELETE

@@ -115,7 +115,8 @@ class LivreEmpruntController {
                 date_emprunt_initiale: result.emprunt.date_emprunt_initiale,
                 date_emprunt: result.emprunt.date_emprunt,
                 date_retour: result.emprunt.date_retour,
-                renouvelable: Boolean(result.emprunt.renouvelable)
+                renouvelable: Boolean(result.emprunt.renouvelable),
+                retour_en_retard: result.retourEnRetard
             });
         } catch (error) {
             console.error('Erreur lors du renouvellement :', error);
@@ -123,22 +124,27 @@ class LivreEmpruntController {
         }
     }
 
-    // UPDATE
     static async rendreLivreEmprunt(req, res) {
         try {
-            const { id } = req.params;
-            const result = await livreEmpruntModel.rendreLivreEmprunt(id);
+            const result = await livreEmpruntModel.rendreLivreEmprunt(req.params.id);
 
-            if (result.affectedRows === 0) {
-                return res.status(409).json({
-                    message: 'Cet emprunt est introuvable ou a déjà été rendu.'
-                });
+            if (!result.found) {
+                return res.status(404).json({ message: 'Cet emprunt est introuvable.' });
             }
 
-            res.json({ message: 'Retour du livre enregistré avec succès.' });
+            if (!result.returned) {
+                return res.status(409).json({ message: 'Cet emprunt a déjà été rendu.' });
+            }
+
+            res.json({
+                message: 'Retour du livre enregistré avec succès.',
+                retour_en_retard: result.retourEnRetard,
+                penaliser: result.penaliser,
+                sanctionner: result.sanctionner
+            });
         } catch (error) {
             console.error('Erreur lors du retour du livre :', error);
-            res.status(500).json({ message: 'Erreur lors de l’enregistrement du retour.' });
+            res.status(500).json({ message: "Erreur lors de l’enregistrement du retour." });
         }
     }
 

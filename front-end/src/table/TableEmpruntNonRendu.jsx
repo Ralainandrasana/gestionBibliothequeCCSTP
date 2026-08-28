@@ -29,7 +29,7 @@ function TableEmpruntNonRendu() {
   };
 
 //renouveler livre
-const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
+const handleRenouveler = (id) => {
   confirm({
     title: 'Êtes-vous sûr de vouloir renouveler cet emprunt ?',
     content: 'La nouvelle date de retour sera fixée à 14 jours à partir d’aujourd’hui.',
@@ -37,15 +37,14 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
     cancelText: 'Non',
     onOk: async () => {
       try {
-        if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
-          await axios.put(`/api/other/adherent/avertir/${id_adh}`);
+        const response = await axios.put(`/api/other/livre_emprunts/renouveler/${id}`);
+        if (response.data?.retour_en_retard) {
           notification.warning({
             message: "Adhérent Averti",
-            description: "car la date de retour est en retard",
+            description: "La date de retour était en retard.",
             duration: 10, // Durée en secondes (0 pour une notification permanente)
           });
         }
-        const response = await axios.put(`/api/other/livre_emprunts/renouveler/${id}`);
         message.success(response.data?.message || 'Emprunt renouvelé avec succès.');
         setData((prevData) =>
           prevData.map((item) =>
@@ -96,9 +95,14 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
           cancelText: 'Non, conserver l’emprunt',
           onOk: async () => {
             try {
-              await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
-              await axios.put(`/api/other/adherent/rendre/${id_adh}`);
-              await axios.put(`/api/other/livre/rendre/${id_livre}`);
+              const returnResponse = await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
+              if (returnResponse.data?.retour_en_retard) {
+                notification.warning({
+                  message: 'Adhérent averti',
+                  description: 'La date de retour était en retard.',
+                  duration: 10,
+                });
+              }
               setData((prevData) => prevData.filter((emprunt) => emprunt.id !== id));
               message.success('Retour du livre enregistré avec succès.');
             } catch (returnError) {
@@ -116,7 +120,7 @@ const handleRenouveler = (id, id_adh, id_livre, date_retour) => {
 };
 
 //rendre livre
-const handleRendre = (id, id_adh, id_livre, date_retour) => {
+const handleRendre = (id) => {
   confirm({
     title: 'Êtes-vous sûr de vouloir rendre le livre cet emprunt?',
     content: 'Cette action est irréversible.',
@@ -124,20 +128,14 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
     cancelText: 'Non',
     onOk: async () => {
       try {
-        await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
-        await axios.put(`/api/other/adherent/rendre/${id_adh}`);
-        await axios.put(`/api/other/livre/rendre/${id_livre}`);
-        if(dayjs().isAfter(dayjs(date_retour), 'day')){//RETOUR EN RETARD
-          await axios.put(`/api/other/adherent/avertir/${id_adh}`);
-
-          //recuperation nombre d'avertissement
-          // const response = await axios.get(`/api/other/adherent/search/${id_adh}`);
-          // setAdherantAverti(response.data);
-          // const nbrAvert = adherantAverti[0].penaliser;
+        const response = await axios.put(`/api/other/livre_emprunts/rendre/${id}`);
+        if (response.data?.retour_en_retard) {
 
           notification.warning({
             message: "Adhérent Averti",
-            description: "Date de retour en retard",
+            description: response.data?.sanctionner
+              ? `Date de retour en retard : ${response.data.penaliser} avertissement(s), adhérent sanctionné.`
+              : `Date de retour en retard : ${response.data.penaliser} avertissement(s).`,
             duration: 10, // Durée en secondes (0 pour une notification permanente)
           });
         }
@@ -284,7 +282,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
                   variant="outlined" 
                   size="small" 
                   disabled={!record.renouvelable}
-                  onClick={() => handleRenouveler(record.id, record.id_adh, record.id_livre, record.date_retour)}
+                  onClick={() => handleRenouveler(record.id)}
                 >
                   Renouv.
                 </Button>
@@ -292,7 +290,7 @@ const handleRendre = (id, id_adh, id_livre, date_retour) => {
                 <Button 
                   type="primary" 
                   size="small"
-                  onClick={() => handleRendre(record.id, record.id_adh, record.id_livre, record.date_retour)}
+                  onClick={() => handleRendre(record.id)}
                 >Rendre
                 </Button>
               </Space>
