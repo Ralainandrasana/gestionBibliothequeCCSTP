@@ -261,6 +261,14 @@ body {
 .table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-body table tbody tr td{
   color: var(--blueSombre);
 }
+
+/* Afficher le meme indicateur que dans les pages de detail lorsqu'une
+   cellule de donnees ne contient aucune valeur. */
+.table .ant-table-tbody > tr.ant-table-row > td.ant-table-cell:empty::before {
+  content: '—';
+  color: var(--blueSombre);
+}
+
 .table .ant-table-wrapper .ant-spin-nested-loading .ant-spin-container .ant-table .ant-table-container .ant-table-body table tbody tr:hover{
   /* background-color: var(--blueTh); */
 }
