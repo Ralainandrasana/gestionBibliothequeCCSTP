@@ -2,7 +2,8 @@ const db = require('../config/db');
 
 class AppLogsModel {
     // READ
-    static async getAppLogs({ limit = 20, offset = 0, search = '' } = {}) {
+    static async getAppLogs({ limit = 20, offset = 0, search = '', source = 'active' } = {}) {
+        const tableName = source === 'archive' ? 'app_logs_archive' : 'app_logs';
         const searchableColumns = `CONCAT_WS(' ',
             log_id, Timestamp, Action, TableName, RecordID, SqlQuery, UserID,
             ServerIP, RequestUrl, RequestData, RequestCompleted, RequestMsg
@@ -15,7 +16,7 @@ class AppLogsModel {
                 `SELECT log_id, Timestamp, Action, TableName, RecordID, SqlQuery,
                         UserID, ServerIP, RequestUrl, RequestData,
                         RequestCompleted, RequestMsg
-                 FROM app_logs${whereClause}
+                 FROM ${tableName}${whereClause}
                  ORDER BY log_id DESC LIMIT ? OFFSET ?`,
                 [...searchValues, limit, offset],
                 (error, result) => error ? reject(error) : resolve(result)
@@ -24,7 +25,7 @@ class AppLogsModel {
 
         const total = await new Promise((resolve, reject) => {
             db.query(
-                `SELECT COUNT(*) AS total FROM app_logs${whereClause}`,
+                `SELECT COUNT(*) AS total FROM ${tableName}${whereClause}`,
                 searchValues,
                 (error, result) => error ? reject(error) : resolve(Number(result[0]?.total || 0))
             );

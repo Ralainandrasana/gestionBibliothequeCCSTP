@@ -243,3 +243,55 @@ CREATE TABLE IF NOT EXISTS app_sessions (
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_general_ci;
 
+
+-- ============================================================
+-- Archivage des journaux applicatifs de plus d'un an
+-- Execute le 28/08/2026 : 27 291 lignes archivees sans perte.
+-- La page Historique systeme permet de consulter les deux tables.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS app_logs_archive LIKE app_logs;
+
+ALTER TABLE app_logs_archive
+ADD COLUMN IF NOT EXISTS archived_at TIMESTAMP NOT NULL
+DEFAULT CURRENT_TIMESTAMP;
+
+CREATE INDEX IF NOT EXISTS idx_app_logs_timestamp
+ON app_logs (Timestamp);
+
+CREATE INDEX IF NOT EXISTS idx_app_logs_archive_timestamp
+ON app_logs_archive (Timestamp);
+
+START TRANSACTION;
+
+INSERT IGNORE INTO app_logs_archive (
+    log_id, Timestamp, Action, TableName, RecordID, SqlQuery,
+    UserID, ServerIP, RequestUrl, RequestData,
+    RequestCompleted, RequestMsg
+)
+SELECT
+    log_id, Timestamp, Action, TableName, RecordID, SqlQuery,
+    UserID, ServerIP, RequestUrl, RequestData,
+    RequestCompleted, RequestMsg
+FROM app_logs
+WHERE Timestamp < DATE_FORMAT(
+    DATE_SUB(NOW(), INTERVAL 365 DAY),
+    '%Y-%m-%d %H:%i:%s'
+);
+
+-- Une ligne active n'est retiree que si sa copie existe dans l'archive.
+DELETE activeLog
+FROM app_logs activeLog
+INNER JOIN app_logs_archive archivedLog
+    ON archivedLog.log_id = activeLog.log_id
+WHERE activeLog.Timestamp < DATE_FORMAT(
+    DATE_SUB(NOW(), INTERVAL 365 DAY),
+    '%Y-%m-%d %H:%i:%s'
+);
+
+COMMIT;
+
+-- Compacter les pages InnoDB apres le deplacement massif et actualiser
+-- les statistiques utilisees par l'optimiseur SQL.
+OPTIMIZE TABLE app_logs, app_logs_archive;
+

@@ -11,10 +11,12 @@ class AppLogsController {
                 ? Math.min(Math.max(requestedPageSize, 10), 100)
                 : 20;
             const search = String(req.query.search || '').trim().slice(0, 150);
+            const source = req.query.source === 'archive' ? 'archive' : 'active';
             const { rows, total } = await appLogsModel.getAppLogs({
                 limit: pageSize,
                 offset: (page - 1) * pageSize,
-                search
+                search,
+                source
             });
 
             res.json({

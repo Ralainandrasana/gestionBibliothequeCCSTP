@@ -1,5 +1,5 @@
-import { Table, Input, Space, Tag } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Table, Input, Select, Space, Tag } from 'antd';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import height from './height';
 
@@ -10,11 +10,14 @@ function TableHistoriqueSysteme() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [logSource, setLogSource] = useState('active');
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 20,
     total: 0
   });
+  const currentPage = pagination.current;
+  const currentPageSize = pagination.pageSize;
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -34,9 +37,10 @@ function TableHistoriqueSysteme() {
         const response = await axios.get('/api/crud/app_logs', {
           signal: controller.signal,
           params: {
-            page: pagination.current,
-            pageSize: pagination.pageSize,
-            search: debouncedSearch
+            page: currentPage,
+            pageSize: currentPageSize,
+            search: debouncedSearch,
+            source: logSource
           }
         });
 
@@ -56,7 +60,7 @@ function TableHistoriqueSysteme() {
 
     fetchData();
     return () => controller.abort();
-  }, [pagination.current, pagination.pageSize, debouncedSearch]);
+  }, [currentPage, currentPageSize, debouncedSearch, logSource]);
 
   return (
     <div>
@@ -66,6 +70,18 @@ function TableHistoriqueSysteme() {
         </div>
         <div className="right">
           <Space>
+            <Select
+              value={logSource}
+              style={{ width: 190 }}
+              options={[
+                { value: 'active', label: 'Journaux récents' },
+                { value: 'archive', label: 'Archives (> 1 an)' }
+              ]}
+              onChange={(value) => {
+                setLogSource(value);
+                setPagination((current) => ({ ...current, current: 1 }));
+              }}
+            />
             <Input
               allowClear
               value={searchTerm}
@@ -86,7 +102,9 @@ function TableHistoriqueSysteme() {
             ...pagination,
             showSizeChanger: true,
             pageSizeOptions: ['10', '20', '50', '100'],
-            showTotal: (total) => `Total des journaux : ${total}`
+            showTotal: (total) => logSource === 'archive'
+              ? `Total des archives : ${total}`
+              : `Total des journaux récents : ${total}`
           }}
           onChange={(nextPagination) => {
             setPagination(current => ({
