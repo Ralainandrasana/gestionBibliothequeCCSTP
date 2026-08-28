@@ -11,6 +11,10 @@ const db = mysql.createPool({
 });
 
 const originalQuery = db.query;
+// Les operations techniques (sessions) peuvent reutiliser le pool sans
+// remplacer la derniere requete metier conservee par le journal d'audit.
+db.queryWithoutAudit = originalQuery.bind(db);
+
 db.query = function auditedQuery(...args) {
     recordSqlQuery(args[0]);
     const contextAwareArgs = args.map(arg => {

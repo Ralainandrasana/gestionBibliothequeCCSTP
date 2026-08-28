@@ -14,6 +14,8 @@ const decodeHtmlEntitiesResponse = require('./middleware/decodeHtmlEntitiesRespo
 const gzipJsonResponse = require('./middleware/gzipJsonResponse');
 const createPrecompressedStatic = require('./middleware/precompressedStatic');
 const uploadErrorHandler = require('./middleware/uploadErrorHandler');
+const db = require('./config/db');
+const MySqlSessionStore = require('./session/MySqlSessionStore');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -42,6 +44,10 @@ app.use(decodeHtmlEntitiesResponse);
 // Configuration des sessions
 app.use(session({
   secret: process.env.SESSION_SECRET || 'dev_secret_key_change_in_production',
+  store: new MySqlSessionStore(db, {
+    defaultTtlMs: 24 * 60 * 60 * 1000,
+    cleanupIntervalMs: (Number(process.env.SESSION_CLEANUP_INTERVAL_MINUTES) || 30) * 60 * 1000
+  }),
   resave: false,
   saveUninitialized: false,
   cookie: {

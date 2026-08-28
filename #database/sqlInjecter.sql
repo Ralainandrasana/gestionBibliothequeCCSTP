@@ -223,3 +223,23 @@ ON livre_emprunt (date_emprunt, code_pers);
 CREATE INDEX IF NOT EXISTS idx_adherent_date_reinscription
 ON adherent (date_reinscription);
 
+
+-- ============================================================
+-- Sessions persistantes du backend Node.js
+-- Execute et verifie le 28/08/2026 sur MariaDB 10.4.
+-- La table est independante des donnees metier.
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS app_sessions (
+    session_id VARCHAR(128) COLLATE utf8mb4_bin NOT NULL,
+    expires_at DATETIME(3) NOT NULL,
+    session_data LONGTEXT NOT NULL,
+    updated_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (session_id),
+    INDEX idx_app_sessions_expires_at (expires_at)
+) ENGINE=InnoDB
+  DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_general_ci;
+
