@@ -86,7 +86,7 @@ export const entityRecords = {
       },
       { name: 'penaliser', label: 'Niveau de pénalisation', type: 'number' },
       { name: 'sanctionner', label: 'Sanctionné', type: 'boolean' },
-      { name: 'nbrLivreEmp', label: 'Nombre de livres empruntés', type: 'number', editable: false },
+      { name: 'nbrLivreEmp', label: 'Nombre de livres empruntés', type: 'number' },
     ],
   },
   livre: {
