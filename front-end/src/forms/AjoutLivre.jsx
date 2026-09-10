@@ -3,16 +3,30 @@ import { RightOutlined, HomeOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
+// Colonnes NOT NULL en base : un champ laissé vide doit partir en chaîne vide.
+// Les autres champs facultatifs sont omis afin d'être enregistrés à NULL.
+const CHAMPS_NON_NULLABLES = ['editeur', 'etat'];
+
 const onFinish = async (values, navigate) => {
   const formData = new FormData();
 
   Object.keys(values).forEach((key) => {
+    const value = values[key];
+
+    // Ne pas transmettre "undefined" pour un champ facultatif laissé vide.
+    if (value === undefined || value === null || value === '') {
+      if (CHAMPS_NON_NULLABLES.includes(key)) {
+        formData.append(key, '');
+      }
+      return;
+    }
+
     if (key === 'date_status') {
       // Format the date in 'YYYY-MM-DD'
-      formData.append(key, values[key].format('YYYY-MM-DD'));
+      formData.append(key, value.format('YYYY-MM-DD'));
     } else {
       // Add other fields
-      formData.append(key, values[key]);
+      formData.append(key, value);
     }
   });
 
@@ -74,7 +88,7 @@ function AjoutPersonne() {
           onFinishFailed={onFinishFailed}
           autoComplete="off"
         >
-          <Form.Item label="Type" name="Type" rules={[{ required: true, message: 'Veuillez entrer le matricule !' }]}>
+          <Form.Item label="Type" name="Type" rules={[{ required: true, message: 'Veuillez choisir le type !' }]}>
               <Select defaultValue={"type"}>
                 <Select.Option value="Livre">Livre</Select.Option>
                 <Select.Option value="Usuelle">Usuelle</Select.Option>
@@ -82,47 +96,47 @@ function AjoutPersonne() {
               </Select>
           </Form.Item>
 
-          <Form.Item label="Titre" name="titre" rules={[{ required: true, message: 'Veuillez entrer le nom !' }]}>
+          <Form.Item label="Titre" name="titre" rules={[{ required: true, message: 'Veuillez entrer le titre !' }]}>
             <Input.TextArea />
           </Form.Item>
 
-          <Form.Item label="Sous Titre" name="sous_titre" rules={[{ required: true, message: 'Veuillez entrer le prénom !' }]}>
+          <Form.Item label="Sous Titre" name="sous_titre">
             <Input.TextArea />
           </Form.Item>
 
-          <Form.Item label="Auteur" name="auteur" rules={[{ required: true, message: 'Veuillez entrer le CIN !' }]}>
+          <Form.Item label="Auteur" name="auteur" rules={[{ required: true, message: 'Veuillez entrer l\'auteur !' }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item label="Editeur" name="editeur" rules={[{ required: true, message: 'Veuillez entrer l\'adresse !' }]}>
+          <Form.Item label="Editeur" name="editeur">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Deway" name="deway" rules={[{ required: true, message: 'Veuillez entrer la profession !' }]}>
+          <Form.Item label="Deway" name="deway" rules={[{ required: true, message: 'Veuillez entrer le Deway !' }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item label="Cote" name="cote" rules={[{ required: true, message: 'Veuillez entrer le département !' }]}>
+          <Form.Item label="Cote" name="cote" rules={[{ required: true, message: 'Veuillez entrer la cote !' }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item label="Isbn" name="ISBN" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Isbn" name="ISBN">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Langue Pays" name="langue_pays" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Langue Pays" name="langue_pays">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Dimension" name="dimension" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Dimension" name="dimension">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Nbre Page" name="nbre_page" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Nbre Page" name="nbre_page">
             <Input />
           </Form.Item>
 
-          <Form.Item label="Etat" name="etat" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Etat" name="etat">
               <Select defaultValue={"Etat"}>
                 <Select.Option value="Neuf">Neuf</Select.Option>
                 <Select.Option value="Bon">Bon</Select.Option>
@@ -130,7 +144,7 @@ function AjoutPersonne() {
               </Select>
           </Form.Item>
 
-          <Form.Item label="Status" name="status" rules={[{ required: true, message: 'Veuillez entrer le numéro de téléphone !' }]}>
+          <Form.Item label="Status" name="status">
           <Select defaultValue={"Status"}>
                 <Select.Option value="OK">OK</Select.Option>
                 <Select.Option value="Pilonner">Pilonner</Select.Option>
@@ -138,7 +152,7 @@ function AjoutPersonne() {
               </Select>
           </Form.Item>
 
-          <Form.Item label="Date Status" name="date_status" rules={[{ required: true, message: 'Veuillez entrer la date d\'inscription !' }]}>
+          <Form.Item label="Date Status" name="date_status">
             <DatePicker />
           </Form.Item>
 
