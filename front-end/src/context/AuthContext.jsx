@@ -5,7 +5,7 @@ import { clearTableCache } from '../utils/tableCache';
 
 const AuthContext = createContext();
 
-// Configuration d'Axios - CORRECTION
+// Pour un build servi par Express, on doit appeler /api depuis la même origine.
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true

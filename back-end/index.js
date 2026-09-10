@@ -21,9 +21,29 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const frontendDistPath = path.resolve(__dirname, '../front-end/dist');
 
-// ✅ CONFIGURATION CORS CORRECTE
+// ✅ CORS permissif pour les accès internes / LAN / localhost
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],  // Ajouter les deux ports
+  origin: (origin, callback) => {
+    if (!origin) {
+      callback(null, true);
+      return;
+    }
+
+    try {
+      const hostname = new URL(origin).hostname.toLowerCase();
+      const isLocalHost = ['localhost', '127.0.0.1', '::1'].includes(hostname);
+      const isLocalNetwork = hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.');
+
+      if (isLocalHost || isLocalNetwork) {
+        callback(null, true);
+        return;
+      }
+    } catch {
+      // ignore invalid origin format
+    }
+
+    callback(new Error('Origin non autorisée par CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -99,6 +119,6 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDistPath)) {
   console.warn(`Build React introuvable dans ${frontendDistPath}. Lancez npm run build dans front-end.`);
 }
 
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur démarré sur le port ${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Serveur démarré sur le port ${PORT} sur 0.0.0.0`);
 });
