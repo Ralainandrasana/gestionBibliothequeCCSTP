@@ -10,7 +10,6 @@ const api = axios.create({
   baseURL: '/api',
   withCredentials: true
 });
-
 // React StrictMode remonte les composants en développement. Partager la requête
 // en cours évite deux vérifications identiques au premier affichage.
 let pendingSessionCheck = null;
